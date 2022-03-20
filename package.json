@@ -1,0 +1,29 @@
+{
+  "name": "seth-movies",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stiv-telegrams/seth-movies.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stiv-telegrams/seth-movies/issues"
+  },
+  "homepage": "https://github.com/stiv-telegrams/seth-movies#readme",
+  "dependencies": {
+    "airgram": "^5.0.0",
+    "dotenv": "^16.0.0",
+    "prompt-sync": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.21"
+  }
+}
