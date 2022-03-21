@@ -1,0 +1,16 @@
+{
+    "allowedUserIdsRange": {
+        "min": "1",
+        "max": "400000000"
+    },
+    "serviceMessageTexts": {
+        "welcome":"Welcome to chat.",
+        "successfulRegistration":"You are successfully registered. The service will be started soon.",
+        "restartRegistration":"Ok, we will restart the registration.",
+        "youAreBlocked": "Sorry, we can't serve you. [blocked by the admin]",
+        "yourIdIsOutOfRange": "Sorry we can't serve you. [user id out of our range]",
+        "waitForAdminApproval": "Please wait until an admin approves you.",
+        "notReplied": "You haven't replied to the last question.",
+        "tryAgain":"Please try again [%reason%]"
+    }
+}

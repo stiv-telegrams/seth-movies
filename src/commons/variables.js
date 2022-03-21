@@ -1,3 +1,3 @@
 let welcomeAtLoginText = (firstName) => `Hi ${firstName}, good to see you here!`;
-
-export {welcomeAtLoginText};
+let users_dir = "data-store";
+export { welcomeAtLoginText, users_dir };
