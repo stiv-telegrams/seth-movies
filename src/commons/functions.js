@@ -1,6 +1,7 @@
 import { Airgram, Auth } from 'airgram';
 import prompt from "prompt-sync";
 import dotenv from "dotenv";
+import { welcomeAtLoginText } from './variables.js';
 
 const getLine = prompt();
 dotenv.config();
@@ -19,13 +20,22 @@ function getAirgram(
     });
 }
 
-function authUser(airgram){
+function authUser(airgram) {
     airgram.use(new Auth({
         phoneNumber: () => getLine(`Phone number: `),
         code: () => getLine(`Login code: `),
-        password: () => getLine("Password: ",{echo:"*"})
+        password: () => getLine("Password: ", { echo: "*" })
     }))
 }
 
+async function welcomeAtLogin(airgram) {
+    try {
+        let me = await airgram.api.getMe();
+        console.log(welcomeAtLoginText(me.response.firstName));
+    } catch (error) {
+        console.error("[Error while welcoming at login]");
+        console.dir(error, { depth: null });
+    }
+}
 
-export { getAirgram, authUser };
+export { getAirgram, authUser, welcomeAtLogin };
