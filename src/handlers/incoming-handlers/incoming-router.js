@@ -1,7 +1,8 @@
-import fs from "fs";
-import path from "path";
+// import fs from "fs";
+// import path from "path";
 import { getLogTime } from "../../commons/functions.js";
-const { allowedUserIdsRange, serviceMessageTexts } = JSON.parse(fs.readFileSync(path.resolve("config.json"), "utf-8"));
+// const { allowedUserIdsRange, serviceMessageTexts } = JSON.parse(fs.readFileSync(path.resolve("config.json"), "utf-8"));
+import { allowedUserIdsRange, serviceMessageTexts } from "../../../config.js";
 import User from "../../modules/user.js";
 import notServingHandler from "./not-serving-handler.js";
 import registeredUserHandler from "./registered-user-handler.js";
