@@ -1,15 +1,11 @@
 
+import path from "path";
+import fs from "fs";
 import { users_dir } from "../commons/variables.js";
-import  path  from "path";
-import fs  from "fs";
-
-// const {
-//     validations,
-//     serviceMessageTexts } = require(path.resolve("src/movies/config.json"));
-
+import { deleteMessages, sendMessage } from "../commons/functions.js";
+const { serviceMessageTexts } = JSON.parse(fs.readFileSync(path.resolve("config.json"), "utf-8"));
 export default class User {
     #id;
-    // access_hash;
     name;
     age;
     country;
@@ -37,10 +33,6 @@ export default class User {
         return this.#id
     }
 
-    isRegistered() {
-        return fs.existsSync(path.resolve(users_dir, this.id + ".json"));
-    }
-
     get contactInfo() {
         return {
             name: this.name,
@@ -58,6 +50,10 @@ export default class User {
         return fullInfo
     }
 
+    isRegistered() {
+        return fs.existsSync(path.resolve(users_dir, this.id + ".json"));
+    }
+
     save() {
         let user_data = this.fullInfo;
         let user_file_path = path.resolve(users_dir, this.id + ".json");
@@ -68,46 +64,40 @@ export default class User {
         })
     }
 
-    // async sendMessage(mtproton, content) {
-    //     if (!content) {
-    //         return { success: false, reason: "CONTENT_NOT_SPECIFIED" };
-    //     }
-    //     let type = content.type;
-    //     if (!type) {
-    //         return { success: false, reason: "CONTENT_TYPE_NOT_SPECIFIED" };
-    //     }
-    //     let random_id = parseInt(new Date().getTime() + "" + Math.round(Math.random() * 1000))
-    //     if (type === "text") {
-    //         let text = content.text;
-    //         if (!text) {
-    //             return { success: false, reason: "MESSAGE_TEXT_NOT_SPECIFIED" };
-    //         }
-    //         let params = { peer: { _: "inputPeerUser", user_id: this.id, access_hash: this.access_hash }, message: text, random_id };
-    //         try {
-    //             let result = await mtproton.call("messages.sendMessage", params);
-    //             fs.writeFileSync("mes.json", JSON.stringify(result));
-    //             return { success: true, result };
-    //         } catch (error) {
-    //             return { success: false, reason: error };
-    //         }
-    //     }
-    // }
+    async addToContact(airgram) {
+        let result = await airgram.api.importContacts({
+            contacts: [
+                {
+                    _: "contact",
+                    phoneNumber: this.phone,
+                    firstName: `${this.name} | ${this.id}`,
+                    userId: this.id
+                }
+            ]
+        });
+        if (result._ == "error" || result.response._ == "error") {
+            return { success: false, reason: result };
+        } else if (result.response.userIds[0] == this.id) {
+            return { success: true, result: true };
+        } else {
+            return { success: true, result: false }
+        }
+    }
 
-    // async notifyError(mtproton, reason) {
-    //     let content = {
-    //         type: "text",
-    //         text: serviceMessageTexts.tryAgain.replace(/\%reason\%/g, reason)
-    //     }
-    //     let sendMessageResult = await this.sendMessage(mtproton, content);
-    //     return sendMessageResult;
-    // }
+    async sendMessage(airgram, content) {
+        return sendMessage(airgram, this.id, content);
+    }
 
-    // updateLastRegistrationMessage(message_code, message_id) {
-    //     this.lastRegistrationMessage = {
-    //         field: message_code,
-    //         id: message_id
-    //     }
-    // }
+    async deleteMessages(airgram, messageIds, revoke) {
+        return deleteMessages(airgram, this.id, messageIds, revoke);
+    }
+
+    updateLastRegistrationMessage(field, text) {
+        this.lastRegistrationMessage = {
+            field,
+            text
+        }
+    }
 
     // validate(field, value) {
     //     if (!(field && value)) {

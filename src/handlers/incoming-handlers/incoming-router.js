@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { getLogTime } from "../../commons/functions.js";
 const { allowedUserIdsRange, serviceMessageTexts } = JSON.parse(fs.readFileSync(path.resolve("config.json"), "utf-8"));
 import User from "../../modules/user.js";
 import notServingHandler from "./not-serving-handler.js";
@@ -8,21 +9,25 @@ import registrationHandler from "./registration-handler.js";
 
 export default function incomingHandler(airgram, message) {
     let userId = message.chatId;
+    let messageId = message.id;
     if (userId < 0) {
         // None-Private Chats will be ignored
         return;
-    } else if (userId < allowedUserIdsRange.min || userId > allowedUserIdsRange.max) {
-        notServingHandler(airgram, userId, serviceMessageTexts.yourIdIsOutOfRange);
     } else {
-        const user = new User(userId);
-        if (user.blocked) {
-            notServingHandler(airgram, userId, serviceMessageTexts.youAreBlocked);
-        } else if (!user.approved) {
-            notServingHandler(airgram, userId, serviceMessageTexts.waitForAdminApproval);
-        } else if (!user.confirmed) {
-            registrationHandler(airgram, user);
-        } else{
-            registeredUserHandler(airgram, user);
+        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[New Private Chat Message]`);
+        if (userId < allowedUserIdsRange.min || userId > allowedUserIdsRange.max) {
+            notServingHandler(airgram, messageId, userId, serviceMessageTexts.yourIdIsOutOfRange, "User_Id_Out_Of_Range");
+        } else {
+            const user = new User(userId);
+            if (user.blocked) {
+                notServingHandler(airgram, messageId, userId, serviceMessageTexts.youAreBlocked, "Blocked_User");
+            } else if (!user.approved) {
+                notServingHandler(airgram, messageId, userId, serviceMessageTexts.waitForAdminApproval), "Unapproved_User";
+            } else if (!user.confirmed) {
+                registrationHandler(airgram, message, user);
+            } else {
+                registeredUserHandler(airgram, message, user);
+            }
         }
     }
 }

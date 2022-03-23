@@ -20,6 +20,7 @@
   "homepage": "https://github.com/stiv-telegrams/seth-movies#readme",
   "dependencies": {
     "airgram": "^5.0.0",
+    "cli-color": "^2.0.1",
     "dotenv": "^16.0.0",
     "prompt-sync": "^4.2.0"
   },
