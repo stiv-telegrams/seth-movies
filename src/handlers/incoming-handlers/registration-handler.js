@@ -30,7 +30,7 @@ export default async function registrationHandler(airgram, message, user) {
             let sentMessageId = askNameMessageResult.result.id;
             user.updateLastRegistrationMessage("name", askNameMessageContent.text);
             try {
-                user.save();
+                await user.save();
                 console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Name Asked]`);
             } catch (error) {
                 console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'saving name asked']`), "\n", error);
@@ -53,15 +53,21 @@ export default async function registrationHandler(airgram, message, user) {
         if (message.replyToMessageId == 0) {
             notReplied = true;
         } else {
-            let repliedToMessage = await airgram.api.getMessage({ chatId: user.id, messageId: message.replyToMessageId });
-            if (repliedToMessage._ == "error" || repliedToMessage.response._ == "error") {
+            let repliedToMessage, apiError;
+            try {
+                repliedToMessage = await airgram.api.getMessage({ chatId: user.id, messageId: message.replyToMessageId });
+            } catch (error) {
+                apiError = error;
+            }
+            if (apiError || repliedToMessage._ == "error" || repliedToMessage.response._ == "error") {
+                console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'getting repliedToMessage'`), "\n", stringifyAirgramResponse(repliedToMessage || apiError));
                 let retryMessageContent = {
                     type: "text",
                     text: serviceMessageTexts.tryAgainDueToInternalError
                 }
                 let retryMessageResult = await user.sendMessage(airgram, retryMessageContent);
                 if (!retryMessageResult.success) {
-                    console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [get repliedToMessage]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
+                    console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [get repliedToMessage]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason || apiError));
                 }
                 return;
             } else {
@@ -115,7 +121,7 @@ export default async function registrationHandler(airgram, message, user) {
                         let sentMessageId = askAgeMessageResult.result.id;
                         user.updateLastRegistrationMessage("age", askAgeMessageContent.text);
                         try {
-                            user.save();
+                            await user.save();
                             console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Age Asked]`);
                         } catch (error) {
                             console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Saving Name']`), "\n", error);
@@ -159,7 +165,7 @@ export default async function registrationHandler(airgram, message, user) {
                             let sentMessageId = askCountryMessageResult.result.id;
                             user.updateLastRegistrationMessage("country", askCountryMessageContent.text);
                             try {
-                                user.save();
+                                await user.save();
                                 console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Country Asked]`);
                             } catch (error) {
                                 console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Saving Age']`), "\n", error);
@@ -193,7 +199,7 @@ export default async function registrationHandler(airgram, message, user) {
                         let sentMessageId = askPhoneMessageResult.result.id;
                         user.updateLastRegistrationMessage("phone", askPhoneMessageContent.text);
                         try {
-                            user.save();
+                            await user.save();
                             console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Phone Asked]`);
                         } catch (error) {
                             console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Saving Country']`), "\n", error);
@@ -242,7 +248,7 @@ export default async function registrationHandler(airgram, message, user) {
                             let sentMessageId = askConfirmationMessageResult.result.id;
                             user.updateLastRegistrationMessage("confirmation", askConfirmationMessageContent.text);
                             try {
-                                user.save();
+                                await user.save();
                                 console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Confirmation Asked]`);
                             } catch (error) {
                                 console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Saving Phone']`), "\n", error);
@@ -298,7 +304,7 @@ export default async function registrationHandler(airgram, message, user) {
                                 let sentMessageId = askPhoneMessageResult.result.id;
                                 user.updateLastRegistrationMessage("phone", askPhoneMessageContent.text);
                                 try {
-                                    user.save();
+                                    await user.save();
                                     console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Phone Asked After Invalid Or Different Phone]`);
                                 } catch (error) {
                                     console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Saving Phone Question After Invalid Or Different Phone']`), "\n", error);
@@ -320,7 +326,7 @@ export default async function registrationHandler(airgram, message, user) {
                             user.confirmed = true;
                             user.lastRegistrationMessage = undefined;
                             try {
-                                user.save();
+                                await user.save();
                                 console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[User Confirmed]`);
                                 let successfulRegistrationMessageContent = {
                                     type: "text",
@@ -365,7 +371,7 @@ export default async function registrationHandler(airgram, message, user) {
                             let sentMessageId = askNameMessageResult.result.id;
                             user.updateLastRegistrationMessage("name", askNameMessageContent.text);
                             try {
-                                user.save();
+                                await user.save();
                                 console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Name Asked]`);
                             } catch (error) {
                                 console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'saving name asked']`), "\n", error);

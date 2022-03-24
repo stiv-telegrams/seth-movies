@@ -4,7 +4,7 @@ import { postChannelId } from "../../../config.js";
 
 export default function outgoingHandler(airgram, message) {
     let commandsRegex = /^\#\S+\s/;
-    let text = message.content.text.text || message.content.caption.text;
+    let text = message.content.text?.text || message.content.caption?.text;
     if (!text) {
         return;
     } else {

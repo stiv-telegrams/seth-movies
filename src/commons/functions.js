@@ -80,13 +80,16 @@ async function sendMessage(airgram, chatId, content, options) {
                     }
                 }
             }
-
             break;
-
         default:
             return { success: false, reason: "UNSUPPORTED_CONTENT_TYPE" };
     }
-    let result = await airgram.api.sendMessage(params);
+    let result;
+    try {
+        result = await airgram.api.sendMessage(params);
+    } catch (error) {
+        return { success: false, reason: error };
+    }
     if (result._ == "error" || result.response._ == "error") {
         return { success: false, reason: result };
     } else {
@@ -100,7 +103,12 @@ async function deleteMessages(airgram, chatId, messageIds, revoke = true) {
         messageIds,
         revoke
     }
-    let result = await airgram.api.deleteMessages(params);
+    let result;
+    try {
+        result = await airgram.api.deleteMessages(params);
+    } catch (error) {
+        return { success: false, reason: error };
+    }
     if (result._ == "error" || result.response._ == "error") {
         return { success: false, reason: result };
     } else {

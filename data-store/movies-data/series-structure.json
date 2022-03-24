@@ -1,22 +1,36 @@
-{
-    "1":{
-        "1":{
-            "Q1":"id",
-            "Q2":"id"
-        },
-        "2":{
-            "Q1":"id",
-            "Q2":"id"
+[
+    {
+        "1": {
+            "1": {
+                "Q1": {
+                    "id": "id",
+                    "inChatId": "inChatId"
+                },
+                "Q2": {
+                    "id": "id",
+                    "inChatId": "inChatId"
+                }
+            },
+            "2": {
+                "Q1": {
+                    "id": "id",
+                    "inChatId": "inChatId"
+                },
+                "Q2": {
+                    "id": "id",
+                    "inChatId": "inChatId"
+                }
+            }
         }
     },
-    "2":{
-        "1":{
-            "Q1":"id",
-            "Q2":"id"
+    {
+        "Q1": {
+            "id": "id",
+            "inChatId": "inChatId"
         },
-        "2":{
-            "Q1":"id",
-            "Q2":"id"
+        "Q2": {
+            "id": "id",
+            "inChatId": "inChatId"
         }
     }
-}
+]

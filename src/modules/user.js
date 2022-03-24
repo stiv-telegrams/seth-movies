@@ -56,18 +56,22 @@ export default class User {
         return fs.existsSync(path.resolve(users_dir, this.id + ".json"));
     }
 
-    save() {
+    async save() {
         let user_data = this.fullInfo;
         let user_file_path = path.resolve(users_dir, this.id + ".json");
-        fs.writeFile(user_file_path, JSON.stringify(user_data), (error) => {
-            if (error) {
-                throw error;
-            }
+        return new Promise((resolve, reject) => {
+            fs.writeFile(user_file_path, JSON.stringify(user_data), (error) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            })
         })
     }
 
     async addToContact(airgram) {
-        let result = await airgram.api.importContacts({
+        let params = {
             contacts: [
                 {
                     _: "contact",
@@ -76,7 +80,13 @@ export default class User {
                     userId: this.id
                 }
             ]
-        });
+        };
+        let result;
+        try {
+            result = await airgram.api.importContacts(params);
+        } catch (error) {
+            return { success: false, reason: error };
+        }
         if (result._ == "error" || result.response._ == "error") {
             return { success: false, reason: result };
         } else if (result.response.userIds[0] == this.id) {

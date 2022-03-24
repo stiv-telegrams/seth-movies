@@ -8,10 +8,17 @@ import notServingHandler from "./not-serving-handler.js";
 import registeredUserHandler from "./registered-user-handler.js";
 import registrationHandler from "./registration-handler.js";
 
-export default function incomingHandler(airgram, message) {
+export default async function incomingHandler(airgram, message) {
     let userId = message.chatId;
     let messageId = message.id;
-    if (userId < 0) {
+    let userType;
+    try {
+        let incomingFromUser = await airgram.api.getUser({ userId });
+        if (incomingFromUser._ != "error" && incomingFromUser.response._ != "error") {
+            userType = incomingFromUser.response.type?._;
+        }
+    } catch (error) {}
+    if (userType != "userTypeRegular") {
         // None-Private Chats will be ignored
         return;
     } else {

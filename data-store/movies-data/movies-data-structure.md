@@ -1,23 +1,23 @@
 + movies-data
-    - movie-types.json
+    - movie-categories.json
     + contents
         + movies
-            + movie-type-one
-                - movie-type-one-list.json
+            + movie-category-one
+                - movie-category-one-list.json
                 - movie-one.json
                 - movie-two.json
-            + movie-type-two
+            + movie-category-two
                 ...
         + series
-            + series-type-one
-                - series-type-one-list.json
+            + series-category-one
+                - series-category-one-list.json
                 - series-one.json
                 - series-two.json
-            + series-type-two
+            + series-category-two
                 ...
         <!-- + series
-            + type-one
-                - type-one-series-list.json
+            + category-one
+                - category-one-series-list.json
                 + series-one
                     - seasons-list.js
                     + season-one
@@ -28,5 +28,5 @@
                         ...
                 + series-two
                     ...
-            + type-two
+            + category-two
                 ... -->
