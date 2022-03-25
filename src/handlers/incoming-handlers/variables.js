@@ -1,8 +1,25 @@
-import { separatingLine } from "../../commons/variables.js";
+import { separatingLine } from "../../../config.js";
 
 let userCommands = [
     "#report"
 ]
+
+let movieQuestionFields = {
+    "movie": [
+        "type",
+        "category",
+        "title",
+        "quality"
+    ],
+    "series": [
+        "type",
+        "category",
+        "title",
+        "season",
+        "episode",
+        "quality"
+    ]
+}
 
 let movieSearchFirstMessage = ">\n\
 "+ separatingLine + "\n\
@@ -12,4 +29,4 @@ Choose a type (reply this message with a number):\n\
 \n\
 *NOTE: To search with title or a keyword, send the title/keyword with out reply.";
 
-export { userCommands, movieSearchFirstMessage }
+export { userCommands, movieSearchFirstMessage, movieQuestionFields }

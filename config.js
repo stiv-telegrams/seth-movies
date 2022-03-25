@@ -10,9 +10,9 @@ let serviceMessageTexts = {
     "youAreBlocked": "Sorry, we can't serve you. [blocked by the admin]",
     "yourIdIsOutOfRange": "Sorry we can't serve you. [user id out of our range]",
     "waitForAdminApproval": "Please wait until an admin approves you.",
-    "userCommandUnderMaintenance":"Sorry, this command is not available yet.",
+    "userCommandUnderMaintenance": "Sorry, this command is not available yet.",
     "tryAgainDueToInternalError": "Please try again [Internal Error]",
-    "invalidReplyWhileSearching":"You have replied to wrong message."
+    "invalidReplyWhileSearching": "You have replied to wrong message."
 }
 let registrationMessages = {
     "name": "Please let me know your real name",
@@ -27,7 +27,8 @@ let validationMessageTexts = {
     "invalidAge": "Invalid age.",
     "invalidPhone": "Invalid phone, phone number must be in the form +1234567890",
     "invalidOrDifferentPhone": "The phone number was invalid or different from the current account.",
-    "invalidConfirmation": "Confirmation must be yes or no."
+    "invalidConfirmation": "Confirmation must be yes or no.",
+    "invalidAnswerWhileSearching": "Invalid answer, please replay a valid number only."
 }
 let validConfirmationAnswers = {
     "yes": [
@@ -43,5 +44,6 @@ let validConfirmationAnswers = {
     ]
 }
 let postChannelId = -1001608780817
+let separatingLine = "———";
 
-export { allowedUserIdsRange, serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers, postChannelId }
+export { allowedUserIdsRange, serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers, postChannelId, separatingLine }

@@ -8,8 +8,9 @@ export default async function newMovieHandler(airgram, message, caption) {
     let movieInfo = {}
     for (let data of dataCaption) {
         let separatorIndex = data.indexOf(":");
-        let key = data.substring(0, separatorIndex).toLowerCase().trim();
-        let value = data.substring(separatorIndex + 1).toLowerCase().trim();
+        let key = data.substring(0, separatorIndex).trim().toLowerCase();
+        let value = data.substring(separatorIndex + 1).trim();
+        value = key != "description" ? value.toLowerCase() : value;
         movieInfo[key] = value;
     }
     let editedCaption;
@@ -18,16 +19,31 @@ export default async function newMovieHandler(airgram, message, caption) {
         title,
         season,
         episode,
-        quality } = movieInfo;
-    let { id, chatId } = message;
+        quality,
+        keyword,
+        description,
+        year } = movieInfo;
+    let { id, chatId, content: { video: { video: { size: fileSize } } } } = message;
+    fileSize = fileSize ? Math.round((fileSize / (1024 * 1024)) * 100) / 100 + "MB" : "Unknown";
     if ((!type || !category || !title || !quality) || (type == "series" && (!season || !episode))) {
-        console.log(getLogTime(), `[${chatId}} | ${id}]`, `[Invalid Caption]`);
+        console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption]`);
         editedCaption = caption + "\n--------------\n❌";
     } else {
-        let movie = new Movie(type, category, title, season, episode, quality, id, chatId);
+        let movie = new Movie(
+            type,
+            category,
+            title,
+            season,
+            episode,
+            quality,
+            id,
+            chatId,
+            keyword,
+            description,
+            year);
         try {
             await movie.save();
-            console.log(getLogTime(), `[${chatId}} | ${id}]`, `[Movie Saved]`);
+            console.log(getLogTime(), `[${chatId} | ${id}]`, `[Movie Saved]`);
             editedCaption = caption + "\n--------------\n✅";
         } catch (error) {
             console.error(getLogTime(), `[${chatId} | ${id}]`, color.red(`[Error while 'Saving Movie']`), "\n", error);

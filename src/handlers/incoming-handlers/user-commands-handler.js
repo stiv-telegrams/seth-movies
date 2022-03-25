@@ -16,7 +16,7 @@ export default async function userCommandsHandler(airgram, message, command) {
             if (!sendCommandUnderMaintenanceResult.success) {
                 console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling User Command Under Maintenance' (${command}) ]`), "\n", stringifyAirgramResponse(sendCommandUnderMaintenanceResult.reason));
             } else {
-                console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[User Command Under Maintenance (${command})]`);
+                console.log(getLogTime(), `[${user.Id} | ${messageId}]`, `[User Command Under Maintenance (${command})]`);
             }
             return;
     }
