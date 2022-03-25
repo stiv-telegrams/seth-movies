@@ -3,8 +3,6 @@ import path from "path";
 import fs from "fs";
 import { users_dir } from "../commons/variables.js";
 import { deleteMessages, sendMessage } from "../commons/functions.js";
-// const { serviceMessageTexts } = JSON.parse(fs.readFileSync(path.resolve("config.json"), "utf-8"));
-import { serviceMessageTexts } from "../../config.js";
 
 export default class User {
     #id;

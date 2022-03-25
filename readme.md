@@ -28,8 +28,8 @@ Used as in-file database.
     - [**incoming-handlers**](./src/handlers/incoming-handlers) | Handles new incoming messages. flow described [here](./src/handlers/incoming-handlers/readme.md)
     - [**outgoing-handlers**](./src/handlers/outgoing-handlers) | Handles new outgoing messages. flow described [here](./src/handlers/outgoing-handlers/readme.md)
     - [**deleted-messages-handler.js**](./src/handlers/deleted-messages-handler.js) | Handles deleted messages.
-- [**modules**](./src/modules) | Modules to be used in the app
-  - [**user**](./src/modules/user.js) | A class to deal with users data, well described in [entities](#entities) section.
+- [**entities**](./src/entities) | entities to be used in the app
+  - [**user**](./src/entities/user.js) | A class to deal with users data, well described in [entities](#entities) section.
 
 **Other Folders** | Used by npm and airgram for configuration and data storage.
 ## Activities
@@ -50,9 +50,9 @@ Used as in-file database.
 
 ## Entities
 
-### [User](./src/modules/user.js)
+### [User](./src/entities/user.js)
 
-A class to deal with users data, defined [here](./src/modules/user.js)
+A class to deal with users data, defined [here](./src/entities/user.js)
 
 **Fields**
 

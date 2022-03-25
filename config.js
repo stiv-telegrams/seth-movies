@@ -41,6 +41,6 @@ let validConfirmationAnswers = {
         "n"
     ]
 }
-let postChannelId = ""
+let postChannelId = -1001608780817
 
 export { allowedUserIdsRange, serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers, postChannelId }

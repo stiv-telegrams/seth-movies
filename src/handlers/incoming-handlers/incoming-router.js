@@ -1,9 +1,7 @@
-// import fs from "fs";
-// import path from "path";
+
 import { getLogTime } from "../../commons/functions.js";
-// const { allowedUserIdsRange, serviceMessageTexts } = JSON.parse(fs.readFileSync(path.resolve("config.json"), "utf-8"));
 import { allowedUserIdsRange, serviceMessageTexts } from "../../../config.js";
-import User from "../../modules/user.js";
+import User from "../../entities/user.js";
 import notServingHandler from "./not-serving-handler.js";
 import registeredUserHandler from "./registered-user-handler.js";
 import registrationHandler from "./registration-handler.js";
@@ -22,7 +20,7 @@ export default async function incomingHandler(airgram, message) {
         // None-Private Chats will be ignored
         return;
     } else {
-        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[New Private Chat Message]`);
+        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[New Incoming Message]`);
         if (userId < allowedUserIdsRange.min || userId > allowedUserIdsRange.max) {
             notServingHandler(airgram, messageId, userId, serviceMessageTexts.yourIdIsOutOfRange, "User_Id_Out_Of_Range");
         } else {

@@ -1,6 +1,7 @@
 import newMovieHandler from "./new-movie-handler.js";
 import adminCommandsHandler from "./admin-commands-handler.js";
 import { postChannelId } from "../../../config.js";
+import { getLogTime } from "../../commons/functions.js";
 
 export default function outgoingHandler(airgram, message) {
     let commandsRegex = /^\#\S+\s/;
@@ -12,10 +13,12 @@ export default function outgoingHandler(airgram, message) {
         if (!commandMatch) {
             return;
         } else {
+            let { id, chatId } = message;
+            console.log(getLogTime(), `[${chatId} | ${id}]`, `[New Outgoing Message]`);
             let command = commandMatch[0].trim().toLowerCase();
             switch (command) {
                 case "#newmovie":
-                    if (message._ != "messageVideo" || message.chatId != postChannelId) {
+                    if (message.content._ != "messageVideo" || message.chatId != postChannelId) {
                         return
                     } else {
                         newMovieHandler(airgram, message, text);

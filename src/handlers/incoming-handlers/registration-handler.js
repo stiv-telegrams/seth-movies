@@ -1,9 +1,6 @@
 
-// import path from "path";
-// import fs from "fs";
 import color from "cli-color";
 import { getLogTime, stringifyAirgramResponse } from "../../commons/functions.js";
-// const { serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers } = JSON.parse(fs.readFileSync(path.resolve("config.json"), "utf-8"));
 import { serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers }  from "../../../config.js";
 
 export default async function registrationHandler(airgram, message, user) {
