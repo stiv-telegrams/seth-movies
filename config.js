@@ -4,14 +4,15 @@ let allowedUserIdsRange = {
 };
 let serviceMessageTexts = {
     "welcome": "Welcome to chat.",
-    "successfulRegistration": "You are successfully registered. The service will be started soon.",
+    "successfulRegistration": "You are successfully registered.",
     "willStartSoon": "You are a registered user. The service will be started soon.",
     "restartRegistration": "Ok, we will restart the registration.",
     "youAreBlocked": "Sorry, we can't serve you. [blocked by the admin]",
     "yourIdIsOutOfRange": "Sorry we can't serve you. [user id out of our range]",
     "waitForAdminApproval": "Please wait until an admin approves you.",
-    "tryAgain": "Please try again [%reason%]",
-    "tryAgainDueToInternalError": "Please try again [Internal Error]"
+    "userCommandUnderMaintenance":"Sorry, this command is not available yet.",
+    "tryAgainDueToInternalError": "Please try again [Internal Error]",
+    "invalidReplyWhileSearching":"You have replied to wrong message."
 }
 let registrationMessages = {
     "name": "Please let me know your real name",
@@ -22,7 +23,7 @@ let registrationMessages = {
 }
 let validationMessageTexts = {
     "notReplied": "You haven't replied to the last question.",
-    "wasExpectingText": "The answer must be a text message.",
+    "wasExpectingText": "I was expecting 'Text Message' only.",
     "invalidAge": "Invalid age.",
     "invalidPhone": "Invalid phone, phone number must be in the form +1234567890",
     "invalidOrDifferentPhone": "The phone number was invalid or different from the current account.",

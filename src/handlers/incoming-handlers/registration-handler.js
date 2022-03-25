@@ -1,7 +1,8 @@
 
 import color from "cli-color";
 import { getLogTime, stringifyAirgramResponse } from "../../commons/functions.js";
-import { serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers }  from "../../../config.js";
+import { serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers } from "../../../config.js";
+import { movieSearchFirstMessage } from "./variables.js";
 
 export default async function registrationHandler(airgram, message, user) {
     let messageId = message.id;
@@ -47,7 +48,7 @@ export default async function registrationHandler(airgram, message, user) {
         }
     } else {
         let notReplied;
-        if (message.replyToMessageId == 0) {
+        if (!message.replyToMessageId) {
             notReplied = true;
         } else {
             let repliedToMessage, apiError;
@@ -332,6 +333,18 @@ export default async function registrationHandler(airgram, message, user) {
                                 let successfulRegistrationMessageResult = await user.sendMessage(airgram, successfulRegistrationMessageContent);
                                 if (!successfulRegistrationMessageResult.success) {
                                     console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Telling Successful Registration']`), "\n", stringifyAirgramResponse(successfulRegistrationMessageResult.reason));
+                                } else {
+                                    console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Told Successful Registration]`);
+                                }
+                                let movieSearchFirstMessageContent = {
+                                    type: "text",
+                                    text: movieSearchFirstMessage
+                                }
+                                let movieSearchFirstMessageFirstTimeResult = await user.sendMessage(airgram, movieSearchFirstMessageContent);
+                                if (!movieSearchFirstMessageFirstTimeResult.success) {
+                                    console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Sending Movie Search First Message First Time']`), "\n", stringifyAirgramResponse(movieSearchFirstMessageFirstTimeResult.reason));
+                                } else {
+                                    console.log(getLogTime(), `[${user.id}} | ${messageId}]`, `[Sent Movie Search First Message First Time]`);
                                 }
                             } catch (error) {
                                 console.error(getLogTime(), `[${user.id} | ${messageId}]`, color.red(`[Error while 'Saving Confirmation']`), "\n", error);

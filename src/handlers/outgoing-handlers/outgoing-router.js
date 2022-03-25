@@ -1,10 +1,11 @@
+
 import newMovieHandler from "./new-movie-handler.js";
 import adminCommandsHandler from "./admin-commands-handler.js";
 import { postChannelId } from "../../../config.js";
 import { getLogTime } from "../../commons/functions.js";
+import { commandsRegex } from "../../commons/variables.js";
 
 export default function outgoingHandler(airgram, message) {
-    let commandsRegex = /^\#\S+\s/;
     let text = message.content.text?.text || message.content.caption?.text;
     if (!text) {
         return;
