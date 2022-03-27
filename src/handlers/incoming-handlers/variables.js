@@ -1,7 +1,8 @@
 import { separatingLine } from "../../../config.js";
 
 let userCommands = [
-    "#report"
+    "#report",
+    "#restart"
 ]
 
 let movieQuestionFields = {
@@ -20,13 +21,12 @@ let movieQuestionFields = {
         "quality"
     ]
 }
-
-let movieSearchFirstMessage = ">\n\
-"+ separatingLine + "\n\
-Choose a type (reply this message with a number):\n\
+let movieSearchFirstMessageFirstLine = "Choose a type (reply this message with a number):"
+let movieSearchFirstMessage = `\
+${movieSearchFirstMessageFirstLine}\n\
 1 > Movie\n\
 2 > Series\n\
 \n\
-*NOTE: To search with title or a keyword, send the title/keyword with out reply.";
+*NOTE: To search with title or a keyword, send the title or keyword with out reply.`;
 
-export { userCommands, movieSearchFirstMessage, movieQuestionFields }
+export { userCommands, movieSearchFirstMessage, movieQuestionFields, movieSearchFirstMessageFirstLine }

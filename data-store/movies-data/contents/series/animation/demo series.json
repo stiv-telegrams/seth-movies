@@ -1,9 +1,12 @@
 {
     "1": {
         "1": {
-            "1080": {
-                "id": 144703488,
-                "fromChatId": -1001608780817
+            "1080p": {
+                "id": 179306496,
+                "fromChatId": -1001608780817,
+                "description": "This is a demo video.",
+                "fileSize": 1055736,
+                "duration": 5
             }
         }
     }

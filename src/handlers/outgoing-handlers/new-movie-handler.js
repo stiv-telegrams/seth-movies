@@ -20,11 +20,11 @@ export default async function newMovieHandler(airgram, message, caption) {
         season,
         episode,
         quality,
-        keyword,
+        keywords,
         description,
         year } = movieInfo;
-    let { id, chatId, content: { video: { video: { size: fileSize } } } } = message;
-    fileSize = fileSize ? Math.round((fileSize / (1024 * 1024)) * 100) / 100 + "MB" : "Unknown";
+    let { id, chatId, content: { video: { video: { size: fileSize }, duration } } } = message;
+    // fileSize = fileSize ? Math.round((fileSize / (1024 * 1024)) * 100) / 100 + "MB" : "Unknown";
     if ((!type || !category || !title || !quality) || (type == "series" && (!season || !episode))) {
         console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption]`);
         editedCaption = caption + "\n--------------\n❌";
@@ -38,9 +38,11 @@ export default async function newMovieHandler(airgram, message, caption) {
             quality,
             id,
             chatId,
-            keyword,
+            keywords,
             description,
-            year);
+            year,
+            duration,
+            fileSize);
         try {
             await movie.save();
             console.log(getLogTime(), `[${chatId} | ${id}]`, `[Movie Saved]`);

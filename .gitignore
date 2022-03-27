@@ -2,7 +2,5 @@
 /db
 .env
 /data-store/users-data/users/*.*
-/data-store/movies-data/contents/movie/action/*.*
-/data-store/movies-data/contents/movie/drama/*.*
-/data-store/movies-data/contents/series/action/*.*
-/data-store/movies-data/contents/series/drama/*.*
+/data-store/movies-data/contents/movie/animation/*.*
+/data-store/movies-data/contents/series/animation/*.*

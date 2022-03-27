@@ -1,22 +1,19 @@
 
-import mysql from 'mysql';
 import path from "path";
 import fs from "fs";
 import { movies_dir } from "../commons/variables.js";
-import { dbInfo, separatingLine } from "../../config.js";
-import { addRow, rowExists, updateRows } from '../commons/functions.js';
+import { separatingLine } from "../../config.js";
 
 export default class Movie {
-    uniqueId;
     type;
     category;
     title;
     season;
     episode;
     quality;
-    messageId;
+    id;
     fromChatId;
-    keywords;
+    keyword;
     description;
     year;
     duration;
@@ -29,9 +26,9 @@ export default class Movie {
         season,
         episode,
         quality,
-        messageId,
+        id,
         fromChatId,
-        keywords,
+        keyword,
         description,
         year,
         duration,
@@ -42,14 +39,13 @@ export default class Movie {
         this.season = season;
         this.episode = episode;
         this.quality = quality;
-        this.messageId = messageId;
+        this.id = id;
         this.fromChatId = fromChatId;
-        this.keywords = keywords;
+        this.keyword = keyword;
         this.description = description;
         this.year = year;
         this.duration = duration;
         this.fileSize = fileSize;
-        this.uniqueId = `|${this.type}${this.category}${this.title}${this.quality}`.replace(/\S/, "");
     };
     get fileLocation() {
         if (!fs.existsSync(path.resolve(movies_dir, this.type, this.category))) {
@@ -86,51 +82,65 @@ export default class Movie {
         }
     }
     async save() {
-        if (!this.type || !this.category || !this.title || !this.quality) {
-            throw "SOME_REQUIRED_FIELDS_NOT_SET";
+        let fileLocation = this.fileLocation;
+        if (!fileLocation.success) {
+            throw fileLocation.reason;
         } else {
-            let uniqueId = this.uniqueId;
-            let con = mysql.createConnection({
-                host: dbInfo.host,
-                user: dbInfo.user,
-                password: dbInfo.password,
-                database: dbInfo.database
-            });
-            return new Promise((resolve, reject) => {
-                con.connect(async error => {
-                    if (error) {
-                        reject("COULDN'T_CONNECT_TO_DATABASE_HOST");
+            let content = {};
+            if (fs.existsSync(fileLocation.result)) {
+                try {
+                    content = fs.readFileSync(fileLocation.result, { encoding: 'utf-8' });
+                    // @ts-ignore
+                    content = JSON.parse(content);
+                } catch (error) {
+                    throw error;
+                }
+            }
+            let newContent = {
+                id: this.id,
+                fromChatId: this.fromChatId,
+                keyword: this.keyword,
+                description: this.description,
+                year: this.year,
+                fileSize: this.fileSize,
+                duration: this.duration
+            }
+            switch (this.type) {
+                case "movie":
+                    content[this.quality] = newContent;
+                    break;
+                case "series":
+                    if (!content[this.season]) {
+                        content[this.season] = {
+                            [this.episode]: {
+                                [this.quality]: newContent
+                            }
+                        };
+                        break;
+                    } else if (!content[this.season][this.episode]) {
+                        content[this.episode] = {
+                            [this.quality]: newContent
+                        };
+                        break;
                     } else {
-                        let movieExists;
-                        try {
-                            movieExists = await rowExists(con, dbInfo.moviesTableName, { uniqueId });
-                        } catch (error) {
-                            reject(error);
-                        }
-                        if (movieExists) {
-                            try {
-                                await updateRows(con, dbInfo.moviesTableName, this, { uniqueId })
-                                resolve();
-                            } catch (error) {
-                                reject(error);
-                            }
-                            resolve();
-                        } else {
-                            try {
-                                await addRow(con, dbInfo.moviesTableName, this)
-                                resolve();
-                            } catch (error) {
-                                reject(error);
-                            }
-                        }
+                        content[this.season][this.episode][this.quality] = newContent;
+                        break;
                     }
-
+                default:
+                    throw "UNSUPPORTED_TYPE";
+            }
+            return new Promise((resolve, reject) => {
+                fs.writeFile(fileLocation.result, JSON.stringify(content), (error) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
                 })
-            });
+            })
         }
     };
     async send(airgram, user) {
-        
         let content = this.content;
         // @ts-ignore
         if (!content.success) {

@@ -1,3 +1,4 @@
+import mysql from 'mysql'
 import { Airgram, Auth } from 'airgram';
 import prompt from "prompt-sync";
 import color from "cli-color";
@@ -43,6 +44,23 @@ function authUser(airgram) {
     }))
 }
 
+async function getAllChats(airgram) {
+    let params = {
+        chatList: null,
+        limit: 99999999
+    }
+    let result;
+    try {
+        result = await airgram.api.getChats(params);
+    } catch (error) {
+        return { success: false, reason: error };
+    }
+    if (result._ == "error" || result.response._ == "error") {
+        return { success: false, reason: result };
+    } else {
+        return { success: true, result: result.response }
+    }
+}
 async function welcomeAtLogin(airgram) {
     try {
         let me = await airgram.api.getMe();
@@ -129,4 +147,128 @@ function stringifyAirgramResponse(airgramResponse) {
     return JSON.stringify(airgramResponse, removeAirgram, 2);
 }
 
-export { getLogTime, getAirgram, authUser, welcomeAtLogin, sendMessage, deleteMessages, stringifyAirgramResponse };
+// mysql methods
+
+/**
+ * Checks if a row with the given columns data exists or not
+ * @param {mysql.Connection} con a mysql connection
+ * @param {string} table mysql table name
+ * @param {*} conditionsObject conditions to define the row to be checked
+ */
+async function rowExists(con, table, conditionsObject) {
+    let conditions = [];
+    for (let [column, data] of Object.entries(conditionsObject)) {
+        conditions.push(`${column}=${data ? `'${data}'` : `NULL`}`);
+    }
+    // @ts-ignore
+    conditions = conditions.join(" AND ");
+    let query = `SELECT EXISTS(SELECT * FROM ${table} WHERE ${conditions})`;
+    return new Promise((resolve, reject) => {
+        con.query(query, (error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                try {
+                    resolve(Object.values(result[0])[0]);
+                } catch (error) {
+                    reject(error);
+                }
+
+            }
+        })
+    });
+}
+
+/**
+ * Adds a row to mysql table
+ * @param {mysql.Connection} con a mysql connection
+ * @param {string} table mysql table name
+ * @param {*} rowData columnName to data pair object
+ */
+async function addRow(con, table, rowData) {
+    let columns = Object.keys(rowData).join(", ");
+    let data = Object.values(rowData).map(data => data ? `'${data}'` : `NULL`).join(", ");
+    let query = `INSERT INTO ${table} (${columns}) VALUES (${data})`;
+    return new Promise((resolve, reject) => {
+        con.query(query, (error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        })
+    });
+}
+
+/**
+ * Updates a row(s) in mysql table
+ * @param {mysql.Connection} con a mysql connection
+ * @param {string} table mysql table name
+ * @param {*} columns columns to be returned
+ * @param {*} conditionsObject conditions to define the rows to be edited to data pair object
+ */
+async function getRows(con, table, columns, conditionsObject) {
+    let conditions = [];
+    for (let [column, data] of Object.entries(conditionsObject)) {
+        conditions.push(`${column}=${data ? `'${data}'` : `NULL`}`);
+    }
+    // @ts-ignore
+    conditions = conditions.join(" AND ");
+    columns = columns.join(" , ");
+
+    let query = `SELECT ${columns} FROM ${table} WHERE ${conditions}`;
+    return new Promise((resolve, reject) => {
+        con.query(query, (error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        })
+    });
+}
+
+/**
+ * Updates a row(s) in mysql table
+ * @param {mysql.Connection} con a mysql connection
+ * @param {string} table mysql table name
+ * @param {*} newDataObject columnName to newData pair object
+ * @param {*} conditionsObject conditions to define the rows to be edited to data pair object
+ */
+async function updateRows(con, table, newDataObject, conditionsObject) {
+    let conditions = [];
+    for (let [column, data] of Object.entries(conditionsObject)) {
+        conditions.push(`${column}=${data ? `'${data}'` : `NULL`}`);
+    }
+    // @ts-ignore
+    conditions = conditions.join(" AND ");
+
+    let newData = [];
+    for (let [column, data] of Object.entries(newDataObject)) {
+        newData.push(`${column}=${data ? `'${data}'` : `NULL`}`);
+    }
+    let query = `UPDATE ${table} SET ${newData} WHERE ${conditions}`;
+    return new Promise((resolve, reject) => {
+        con.query(query, (error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        })
+    });
+}
+export {
+    getLogTime,
+    getAirgram,
+    authUser,
+    getAllChats,
+    welcomeAtLogin,
+    sendMessage,
+    deleteMessages,
+    stringifyAirgramResponse,
+    rowExists,
+    addRow,
+    getRows,
+    updateRows
+};

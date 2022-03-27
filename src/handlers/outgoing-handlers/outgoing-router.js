@@ -15,7 +15,7 @@ export default function outgoingHandler(airgram, message) {
             return;
         } else {
             let { id, chatId } = message;
-            console.log(getLogTime(), `[${chatId} | ${id}]`, `[New Outgoing Message]`);
+            console.log("\n"+getLogTime(), `[${chatId} | ${id}]`, `[New Outgoing Message]`);
             let command = commandMatch[0].trim().toLowerCase();
             switch (command) {
                 case "#newmovie":

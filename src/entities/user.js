@@ -14,7 +14,6 @@ export default class User {
     approved = true;
     blocked = false;
     lastRegistrationMessage;
-    movieBeingBuilt;
 
     constructor(id) {
         this.#id = id;

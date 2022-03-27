@@ -22,7 +22,7 @@ export default async function incomingHandler(airgram, message) {
         // None-Private Chats will be ignored
         return;
     } else {
-        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[New Incoming Message]`);
+        console.log("\n"+getLogTime(), `[${userId} | ${messageId}]`, `[New Incoming Message]`);
         if (userId < allowedUserIdsRange.min || userId > allowedUserIdsRange.max) {
             notServingHandler(airgram, messageId, userId, serviceMessageTexts.yourIdIsOutOfRange, "User_Id_Out_Of_Range");
         } else {
@@ -37,7 +37,7 @@ export default async function incomingHandler(airgram, message) {
                     let commandMatch = text.match(commandsRegex);
                     let command = commandMatch?.[0].trim().toLowerCase()
                     if (command && userCommands.includes(command)) {
-                        return userCommandsHandler(airgram, message, command)
+                        return userCommandsHandler(airgram, user, message, command)
                     }
                 }
                 if (!user.confirmed) {

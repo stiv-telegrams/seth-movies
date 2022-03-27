@@ -3,10 +3,13 @@ import color from "cli-color";
 import { serviceMessageTexts } from "../../../config.js";
 import { getLogTime, stringifyAirgramResponse } from "../../commons/functions.js";
 import User from "../../entities/user.js";
-export default async function userCommandsHandler(airgram, message, command) {
+import { sendFirstMovieQuestion } from "./functions.js";
+export default async function userCommandsHandler(airgram, user, message, command) {
     let { chatId: userId, id: messageId } = message;
-    let user = new User(userId);
     switch (command) {
+        case "#restart":
+            sendFirstMovieQuestion(airgram, user, messageId);
+            break;
         default:
             let sendCommandUnderMaintenanceContent = {
                 type: "text",
@@ -16,7 +19,7 @@ export default async function userCommandsHandler(airgram, message, command) {
             if (!sendCommandUnderMaintenanceResult.success) {
                 console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling User Command Under Maintenance' (${command}) ]`), "\n", stringifyAirgramResponse(sendCommandUnderMaintenanceResult.reason));
             } else {
-                console.log(getLogTime(), `[${user.Id} | ${messageId}]`, `[User Command Under Maintenance (${command})]`);
+                console.log(getLogTime(), `[${userId} | ${messageId}]`, `[User Command Under Maintenance (${command})]`);
             }
             return;
     }
