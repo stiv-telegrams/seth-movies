@@ -1,6 +1,7 @@
 import color from "cli-color";
-import { getLogTime } from "../../commons/functions.js";
-import Movie from "../../entities/movie.js";
+import { separatingLine } from "../../config.js";
+import { getLogTime } from "../commons/functions.js";
+import Movie from "../entities/movie.js";
 
 export default async function newMovieHandler(airgram, message, caption) {
     let dataCaption = caption.substring(caption.indexOf("\n") + 1);
@@ -10,7 +11,6 @@ export default async function newMovieHandler(airgram, message, caption) {
         let separatorIndex = data.indexOf(":");
         let key = data.substring(0, separatorIndex).trim().toLowerCase();
         let value = data.substring(separatorIndex + 1).trim();
-        value = key != "description" ? value.toLowerCase() : value;
         movieInfo[key] = value;
     }
     let editedCaption;
@@ -27,32 +27,34 @@ export default async function newMovieHandler(airgram, message, caption) {
     // fileSize = fileSize ? Math.round((fileSize / (1024 * 1024)) * 100) / 100 + "MB" : "Unknown";
     if ((!type || !category || !title || !quality) || (type == "series" && (!season || !episode))) {
         console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption]`);
-        editedCaption = caption + "\n--------------\n❌";
+        editedCaption = caption + "\n"+separatingLine+"\n❌ - Invalid Caption";
     } else {
-        let movie = new Movie(
-            type,
-            category,
-            title,
-            season,
-            episode,
-            quality,
-            id,
-            chatId,
-            keywords,
-            description,
-            year,
-            duration,
-            fileSize);
         try {
+            let movie = new Movie(
+                {
+                    type,
+                    category,
+                    title,
+                    season,
+                    episode,
+                    quality,
+                    messageId: id,
+                    fromChatId: chatId,
+                    keywords,
+                    description,
+                    year,
+                    duration,
+                    fileSize
+                });
             await movie.save();
             console.log(getLogTime(), `[${chatId} | ${id}]`, `[Movie Saved]`);
-            editedCaption = caption + "\n--------------\n✅";
+            editedCaption = caption + "\n"+separatingLine+"\n✅";
         } catch (error) {
             console.error(getLogTime(), `[${chatId} | ${id}]`, color.red(`[Error while 'Saving Movie']`), "\n", error);
-            editedCaption = caption + "\n--------------\n❌ - Internal";
+            editedCaption = caption + "\n"+separatingLine+"\n❌ - Internal Error";
         }
     }
-    if (!message.forwardInfo) {
+    if (message.canBeEdited) {
         let params = {
             chatId,
             messageId: id,

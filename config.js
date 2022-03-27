@@ -52,7 +52,9 @@ let validConfirmationAnswers = {
         "n"
     ]
 }
-let postChannelId = -1001608780817
+let postChannelIds = {
+    "-1001608780817": "Ref_Tracker_Channel"
+}
 let separatingLine = "———";
 
-export { dbInfo, allowedUserIdsRange, serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers, postChannelId, separatingLine }
+export { dbInfo, allowedUserIdsRange, serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers, postChannelIds, separatingLine }

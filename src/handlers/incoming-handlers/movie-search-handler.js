@@ -70,14 +70,13 @@ export default async function movieSearchHandler(airgram, message, user) {
             invalidReply = true;
             console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Replied For Invalid Message While Searching (replied to non-text or outgoing message)]`);
         } else {
-            repliedToText = repliedToText.toLowerCase();
             let firstLine = (repliedToText.substring(0, repliedToText.indexOf("\n"))).trim();
             if (!firstLine) {
                 invalidReply = true;
                 console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Replied For Invalid Message While Searching (replied to no-first line)]`);
             } else {
-                let validStart = firstLine.match(/^((series)|(movie))\s\>/);
-                let validFirstMessage = firstLine == movieSearchFirstMessageFirstLine.toLowerCase();
+                let validStart = firstLine.match(/^((series)|(movie))\s\>/i);
+                let validFirstMessage = firstLine == movieSearchFirstMessageFirstLine;
                 if (!validFirstMessage && !validStart) {
                     invalidReply = true;
                     console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Replied For Invalid Message While Searching (replied to invalid first line)]`);
@@ -86,7 +85,7 @@ export default async function movieSearchHandler(airgram, message, user) {
                     if (!validFirstMessage) {
                         knownFields = firstLine.split(">");
                         knownFields = knownFields.map(field => field.trim());
-                        knownFields = knownFields.filter(field => field);
+                        knownFields = knownFields.filter(field => field !== "");
                     }
                     let thisField;
                     let allLines = repliedToText.split(/\n+/).map(line => line.trim());
@@ -94,15 +93,13 @@ export default async function movieSearchHandler(airgram, message, user) {
                         thisField = "type";
                     } else {
                         let typeLine = allLines[2];
-                        thisField = typeLine?.substring(typeLine.lastIndexOf(" ") + 1);
+                        thisField = typeLine?.substring(typeLine.lastIndexOf(" ") + 1).toLowerCase();
                     }
                     if (!thisField) {
                         invalidReply = true;
                         console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Replied For Invalid Message While Searching (replied to invalid typeLine)]`);
                     } else {
-                        let dataLines = allLines.filter(line => {
-                            return line.match(/^\d+\s\>\s\S/);
-                        });
+                        let dataLines = allLines.filter(line => line.match(/^\d+\s\>\s\S/));
                         if (!dataLines[0]) {
                             invalidReply = true;
                             console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Replied For Invalid Message While Searching (replied to no-data lines)]`);
@@ -124,21 +121,24 @@ export default async function movieSearchHandler(airgram, message, user) {
                                 }
                             } else {
                                 knownFields.push(dataLinesObject[messageText]);
+                                let typedMovieQuestionFields = movieQuestionFields[knownFields[0].toLowerCase()];
+                                let knownFieldsObject = {}
+                                knownFields.forEach((element, index) => {
+                                    knownFieldsObject[typedMovieQuestionFields[index]] = element;
+                                })
                                 if (thisField == "quality") {
-                                    let tempFields = [
-                                        knownFields[0],
-                                        "animation",
-                                        `demo ${knownFields[0]}`,
-                                        knownFields[0] == "movie" ? null : "1",
-                                        knownFields[0] == "movie" ? null : "1",
-                                        "1080p"
-                                    ]
-                                    let movie = new Movie(...tempFields);
-                                    let movieSendResult = await movie.send(airgram, user);
-                                    // @ts-ignore
-                                    if (!movieSendResult.success) {
+                                    try {
                                         // @ts-ignore
-                                        console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Sending A Movie']`), "\n", stringifyAirgramResponse(movieSendResult.reason));
+                                        let movie = new Movie(knownFieldsObject);
+                                        let movieSendResult;
+                                        movieSendResult = await movie.send(airgram, user);
+                                        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Sent A Movie]`);
+                                        setTimeout(() => {
+                                            sendFirstMovieQuestion(airgram, user, messageId);
+                                        }, 3000);
+                                    } catch (error) {
+                                        // @ts-ignore
+                                        console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Sending A Movie']`), "\n", stringifyAirgramResponse(error));
                                         let retryMessageContent = {
                                             type: "text",
                                             text: serviceMessageTexts.tryAgainDueToInternalError
@@ -147,20 +147,9 @@ export default async function movieSearchHandler(airgram, message, user) {
                                         if (!retryMessageResult.success) {
                                             console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [The Final Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
                                         }
-                                    } else {
-                                        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Sent A Movie]`);
-                                        setTimeout(() => {
-                                            sendFirstMovieQuestion(airgram, user, messageId);
-                                        }, 3000)
-
                                     }
                                 } else {
-                                    let typedMovieQuestionFields = movieQuestionFields[knownFields[0]];
                                     let nextField = typedMovieQuestionFields[typedMovieQuestionFields.indexOf(thisField) + 1];
-                                    let options = [];
-                                    for (let index = 1; index <= 1 + Math.ceil(Math.random() * 9); index++) {
-                                        options.push(`${nextField}-${index}`);
-                                    }
                                     let con = mysql.createConnection({
                                         host: dbInfo.host,
                                         user: dbInfo.user,
@@ -179,18 +168,15 @@ export default async function movieSearchHandler(airgram, message, user) {
                                                 console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
                                             }
                                         } else {
-                                            let knownFieldsObject = {}
-                                            knownFields.forEach((element, index) => {
-                                                knownFieldsObject[typedMovieQuestionFields[index]] = element;
-                                            })
                                             try {
                                                 let nextOptionsResult = await getRows(con, dbInfo.moviesTableName, [nextField], knownFieldsObject);
-                                                console.dir(nextOptionsResult,{depth:null})
-                                                let nextOptions = [];
+                                                let nextOptions = [], uniqueMaker = [];
                                                 for (let option of nextOptionsResult) {
-                                                    nextOptions.push(option[nextField])
+                                                    if (!uniqueMaker.includes(option[nextField].toLowerCase())) {
+                                                        nextOptions.push(option[nextField]);
+                                                        uniqueMaker.push(option[nextField].toLowerCase());
+                                                    }
                                                 };
-                                                console.dir(nextOptions,{depth:null})
                                                 let nextQuestion = makeMovieQuestion(knownFields, nextField, nextOptions);
 
                                                 let movieQuestionMessageContent = {

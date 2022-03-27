@@ -18,6 +18,14 @@ function getLogTime() {
     now = now.substring(now.indexOf(":") + 1, now.lastIndexOf(":"))
     return color.blue("[" + now + "]");
 }
+/**
+ * Changes first letter of the given text to upper case, and the rest to lower case.
+ * @param {string} text 
+ * @returns {string}
+ */
+function capitalize(text) {
+    return `${text[0].toUpperCase() + text.substring(1).toLowerCase()}`;
+}
 
 /**
  * returns an airgram object
@@ -156,15 +164,19 @@ function stringifyAirgramResponse(airgramResponse) {
  * @param {*} conditionsObject conditions to define the row to be checked
  */
 async function rowExists(con, table, conditionsObject) {
-    let conditions = [];
-    for (let [column, data] of Object.entries(conditionsObject)) {
-        conditions.push(`${column}=${data ? `'${data}'` : `NULL`}`);
+    let conditionParams = [];
+    let values = [];
+    if (conditionsObject) {
+        for (let [column, data] of Object.entries(conditionsObject)) {
+            conditionParams.push(`${column}=${data ? `?` : `NULL`}`);
+        }
+        // @ts-ignore
+        conditionParams = conditionParams.join(" AND ");
+        values = [...Object.values(conditionsObject).filter(condition => condition !== undefined)]
     }
-    // @ts-ignore
-    conditions = conditions.join(" AND ");
-    let query = `SELECT EXISTS(SELECT * FROM ${table} WHERE ${conditions})`;
+    let query = `SELECT EXISTS(SELECT * FROM ${table} ${conditionsObject ? 'WHERE ' + conditionParams : ""})`;
     return new Promise((resolve, reject) => {
-        con.query(query, (error, result) => {
+        con.query(query, values, (error, result) => {
             if (error) {
                 reject(error);
             } else {
@@ -187,10 +199,11 @@ async function rowExists(con, table, conditionsObject) {
  */
 async function addRow(con, table, rowData) {
     let columns = Object.keys(rowData).join(", ");
-    let data = Object.values(rowData).map(data => data ? `'${data}'` : `NULL`).join(", ");
-    let query = `INSERT INTO ${table} (${columns}) VALUES (${data})`;
+    let dataParams = Object.values(rowData).map(data => data ? `?` : `NULL`).join(", ");
+    let dataValues = Object.values(rowData).filter(data => data !== undefined);
+    let query = `INSERT INTO ${table} (${columns}) VALUES (${dataParams})`;
     return new Promise((resolve, reject) => {
-        con.query(query, (error, result) => {
+        con.query(query, dataValues, (error, result) => {
             if (error) {
                 reject(error);
             } else {
@@ -208,17 +221,20 @@ async function addRow(con, table, rowData) {
  * @param {*} conditionsObject conditions to define the rows to be edited to data pair object
  */
 async function getRows(con, table, columns, conditionsObject) {
-    let conditions = [];
-    for (let [column, data] of Object.entries(conditionsObject)) {
-        conditions.push(`${column}=${data ? `'${data}'` : `NULL`}`);
+    let conditionParams = [];
+    let values = [];
+    if (conditionsObject) {
+        for (let [column, data] of Object.entries(conditionsObject)) {
+            conditionParams.push(`${column}=${data ? `?` : `NULL`}`);
+        }
+        // @ts-ignore
+        conditionParams = conditionParams.join(" AND ");
+        values = [...Object.values(conditionsObject).filter(condition => condition !== undefined)]
     }
-    // @ts-ignore
-    conditions = conditions.join(" AND ");
     columns = columns.join(" , ");
-
-    let query = `SELECT ${columns} FROM ${table} WHERE ${conditions}`;
+    let query = `SELECT ${columns} FROM ${table} ${conditionsObject ? 'WHERE ' + conditionParams : ""} ORDER BY ${columns} ASC `;
     return new Promise((resolve, reject) => {
-        con.query(query, (error, result) => {
+        con.query(query, values, (error, result) => {
             if (error) {
                 reject(error);
             } else {
@@ -236,20 +252,25 @@ async function getRows(con, table, columns, conditionsObject) {
  * @param {*} conditionsObject conditions to define the rows to be edited to data pair object
  */
 async function updateRows(con, table, newDataObject, conditionsObject) {
-    let conditions = [];
-    for (let [column, data] of Object.entries(conditionsObject)) {
-        conditions.push(`${column}=${data ? `'${data}'` : `NULL`}`);
+    let conditionParams = [];
+    let values = [];
+    if (conditionsObject) {
+        for (let [column, data] of Object.entries(conditionsObject)) {
+            conditionParams.push(`${column}=${data ? `?` : `NULL`}`);
+        }
+        // @ts-ignore
+        conditionParams = conditionParams.join(" AND ");
+        values = [...Object.values(conditionsObject).filter(condition => condition !== undefined)]
     }
-    // @ts-ignore
-    conditions = conditions.join(" AND ");
 
-    let newData = [];
+    let newDataParams = [];
     for (let [column, data] of Object.entries(newDataObject)) {
-        newData.push(`${column}=${data ? `'${data}'` : `NULL`}`);
+        newDataParams.push(`${column}=${data ? `?` : `NULL`}`);
     }
-    let query = `UPDATE ${table} SET ${newData} WHERE ${conditions}`;
+    values = [...Object.values(newDataParams).filter(data => data), ...values];
+    let query = `UPDATE ${table} SET ${newDataParams} ${conditionsObject ? 'WHERE ' + conditionParams : ""}`;
     return new Promise((resolve, reject) => {
-        con.query(query, (error, result) => {
+        con.query(query, values, (error, result) => {
             if (error) {
                 reject(error);
             } else {
@@ -260,6 +281,7 @@ async function updateRows(con, table, newDataObject, conditionsObject) {
 }
 export {
     getLogTime,
+    capitalize,
     getAirgram,
     authUser,
     getAllChats,

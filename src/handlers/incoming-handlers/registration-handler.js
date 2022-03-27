@@ -1,6 +1,6 @@
 
 import color from "cli-color";
-import { getLogTime, stringifyAirgramResponse } from "../../commons/functions.js";
+import { getLogTime, capitalize, stringifyAirgramResponse } from "../../commons/functions.js";
 import { serviceMessageTexts, registrationMessages, validationMessageTexts, validConfirmationAnswers } from "../../../config.js";
 import { sendFirstMovieQuestion } from "./functions.js";
 
@@ -235,7 +235,7 @@ export default async function registrationHandler(airgram, message, user) {
                         user.phone = phone;
                         let contact_info = "";
                         for (let [field, value] of Object.entries(user.contactInfo)) {
-                            contact_info += `${field[0].toUpperCase() + "" + field.slice(1).toLowerCase()}: ${value}\n`;
+                            contact_info += `${capitalize(field)}: ${value}\n`;
                         }
                         let askConfirmationMessageContent = {
                             type: "text",

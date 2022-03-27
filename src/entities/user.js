@@ -108,40 +108,4 @@ export default class User {
             text
         }
     }
-
-    // validate(field, value) {
-    //     if (!(field && value)) {
-    //         return { success: false, reason: "FIELD_OR_VALUE_NOT_SPECIFIED" };
-    //     }
-    //     switch (field) {
-    //         case "age":
-    //             let age = parseInt(value);
-    //             if (Number.isInteger(age) && age > validations.minAge) {
-    //                 return { success: true, result: true, value: age };
-    //             } else {
-    //                 return { success: true, result: false, message: `Age must be a number greater than or equal to ${validations.minAge}.` };
-    //             }
-    //         case "phone":
-    //             let phoneFormat = /^\+?\d{10,13}$/;
-    //             if (phoneFormat.test(value)) {
-    //                 return { success: true, result: true, value };
-    //             } else {
-    //                 return { success: true, result: false, message: `Phone number must be 10-13 digit number.` };
-    //             }
-    //         case "confirm":
-    //             try {
-    //                 let confirm = value.toLowerCase();
-    //                 if (confirm === "yes" || confirm === "no") {
-    //                     return { success: true, result: true, value: confirm };
-    //                 } else {
-    //                     throw "";
-    //                 }
-    //             } catch (error) {
-    //                 return { success: true, result: false, message: `Only Yes and No are acceptable` };
-    //             }
-
-    //         default:
-    //             return { success: true, result: true, value };
-    //     }
-    // }
 }

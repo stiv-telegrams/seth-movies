@@ -1,18 +1,21 @@
 
 import color from "cli-color";
 import { separatingLine } from "../../../config.js";
-import { getLogTime, stringifyAirgramResponse } from "../../commons/functions.js";
+import { getLogTime, capitalize, stringifyAirgramResponse } from "../../commons/functions.js";
 import { movieSearchFirstMessage } from "./variables.js";
-function makeMovieQuestion(perviousFields, nextField, options) {
+function makeMovieQuestion(knownFields, nextField, nextOptions) {
     let question = "";
-    perviousFields = perviousFields.map(field => ("" + field)[0].toUpperCase() + ("" + field).substring(1));
-    question += perviousFields.join(" > ") + " >\n";
+    question += knownFields.join(" > ") + " >\n";
     question += separatingLine + "\n";
-    question += `Choose ${nextField[0].toUpperCase() + nextField.substring(1)}` + "\n";
-    let count = 1;
-    for (let option of options) {
-        question += `${count} > ${option}` + "\n"
-        count++
+    if (nextOptions.length == 0) {
+        question += `No ${capitalize(nextField)}s found`;
+    } else {
+        question += `Choose ${capitalize(nextField)}` + "\n";
+        let count = 1;
+        for (let option of nextOptions) {
+            question += `${count} > ${option}` + "\n"
+            count++
+        }
     }
     return question;
 }
