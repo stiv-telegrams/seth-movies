@@ -27,14 +27,19 @@ let serviceMessageTexts = {
     yourIdIsOutOfRange: "Sorry we can't serve you. [user id out of our range]",
     waitForAdminApproval: "Please wait until an admin approves you.",
     userCommandUnderMaintenance: "Sorry, this command is not available yet.",
-    tryAgainDueToInternalError: "Please try again [Internal Error]"
+    tryAgainDueToInternalError: "Please try again [Internal Error]",
+    contentNotFound:"Content Not Found!",
+    noResultFound:"No Result Found",
+    hereAreSearchResultsMessage: "The results for your search...",
+    youJustGotUnapproved:"You just got unapproved! Wait until an admin approves you.",
+    youJustGotApproved:"Hi, you have got approved!"
 }
 let validationMessageTexts = {
     notReplied: "You haven't replied to the last question.",
     wasExpectingText: "I was expecting 'Text Message' only.",
     invalidAge: "Invalid age.",
     invalidPhone: "Invalid phone, phone number must be in the form +1234567890",
-    invalidOrDifferentPhone: "The phone number was invalid or different from the current account.",
+    invalidOrDifferentPhone: "The phone number was invalid or different from the current account.\n\n*NOTE If your phone number is hidden, allow me to see your phone (add me to your contacts) and try again.",
     invalidConfirmation: "Confirmation must be yes or no.",
     invalidAnswerWhileSearching: "Invalid answer, please replay a valid number only.",
     invalidReplyWhileSearching: "You have replied to wrong message."

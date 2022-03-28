@@ -90,6 +90,7 @@ export default class User {
         } else if (result.response.userIds[0] == this.id) {
             return { success: true, result: true };
         } else {
+            console.dir(result.response,{depth:null}) //
             return { success: true, result: false }
         }
     }

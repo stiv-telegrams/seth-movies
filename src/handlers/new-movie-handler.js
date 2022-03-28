@@ -24,10 +24,9 @@ export default async function newMovieHandler(airgram, message, caption) {
         description,
         year } = movieInfo;
     let { id, chatId, content: { video: { video: { size: fileSize }, duration } } } = message;
-    // fileSize = fileSize ? Math.round((fileSize / (1024 * 1024)) * 100) / 100 + "MB" : "Unknown";
-    if ((!type || !category || !title || !quality) || (type == "series" && (!season || !episode))) {
+    if ((!type || !category || !title || !quality) || (type.toLowerCase() == "series" && (!season || !episode))) {
         console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption]`);
-        editedCaption = caption + "\n"+separatingLine+"\n❌ - Invalid Caption";
+        editedCaption = caption + "\n" + separatingLine + "\n❌ - Invalid Caption";
     } else {
         try {
             let movie = new Movie(
@@ -48,13 +47,13 @@ export default async function newMovieHandler(airgram, message, caption) {
                 });
             await movie.save();
             console.log(getLogTime(), `[${chatId} | ${id}]`, `[Movie Saved]`);
-            editedCaption = caption + "\n"+separatingLine+"\n✅";
+            editedCaption = caption + "\n" + separatingLine + "\n✅";
         } catch (error) {
             console.error(getLogTime(), `[${chatId} | ${id}]`, color.red(`[Error while 'Saving Movie']`), "\n", error);
-            editedCaption = caption + "\n"+separatingLine+"\n❌ - Internal Error";
+            editedCaption = caption + "\n" + separatingLine + "\n❌ - Internal Error";
         }
     }
-    if (message.canBeEdited) {
+    try {
         let params = {
             chatId,
             messageId: id,
@@ -68,8 +67,6 @@ export default async function newMovieHandler(airgram, message, caption) {
             if (editMessageCaptionResult._ == "error" || editMessageCaptionResult.response._ == "error") {
                 console.error(getLogTime(), `[${chatId} | ${id}]`, color.red(`[Error while 'Editing Caption']`), "\n", editMessageCaptionResult);
             }
-        } catch (error) {
-            console.error(getLogTime(), `[${chatId} | ${id}]`, color.red(`[Error while 'Editing Caption']`), "\n", error);
-        }
-    }
+        } catch (error) {}
+    } catch (error) { }
 }

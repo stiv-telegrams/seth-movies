@@ -220,7 +220,7 @@ export default async function registrationHandler(airgram, message, user) {
                 case "phone":
                     let phoneFormat = /^\+\d{5,20}$/;
                     let phone = message.content.text.text;
-                    phone = phone.replace
+                    phone = phone.replace(/[\-\s\_]/g,"");
                     if (!phoneFormat.test(phone)) {
                         console.log(getLogTime(), `[${user.id} | ${messageId}]`, `[Invalid Phone]`);
                         let invalidPhoneMessageContent = {

@@ -107,13 +107,13 @@ export default class Movie {
                     reject(error);
                 } else {
                     try {
-                        let getMovieResult = await getRows(con, dbInfo.moviesTableName, ["messageId", "fromChatId", "description"], { uniqueId });
+                        let getMovieResult = await getRows(con, dbInfo.moviesTableName, ["messageId", "fromChatId", "description", "duration", "fileSize"], { uniqueId });
                         let movieToBeSent = getMovieResult[0];
                         if (!movieToBeSent) {
                             reject("MOVIE_NOT_FOUND");
                         } else {
                             // @ts-ignore
-                            let { messageId, fromChatId: chatId, description } = movieToBeSent;
+                            let { messageId, fromChatId: chatId, description, duration: videoDuration, fileSize } = movieToBeSent;
                             let getMessageParams = {
                                 chatId,
                                 messageId
@@ -123,11 +123,28 @@ export default class Movie {
                                 if (getMessageResult._ == "error" || getMessageResult.response._ == "error" || !getMessageResult.response.content?.video) {
                                     reject(getMessageResult);
                                 } else {
+                                    let movieSize = fileSize ? Math.round((fileSize / (1024 * 1024)) * 100) / 100 + "MB" : "Unknown";
+                                    let movieDuration;
+                                    if (videoDuration) {
+                                        let durationSec = videoDuration / 100;
+                                        if (durationSec > 60) {
+                                            let durationMin = durationSec / 60;
+                                            if (durationMin > 60) {
+                                                movieDuration = `${Math.floor(durationMin / 60)}:${Math.round(durationMin % 60)} Hour`
+                                            } else {
+                                                movieDuration = `${Math.round(durationMin * 100) / 100} Min`
+                                            }
+                                        } else {
+                                            movieDuration = `${Math.round(durationSec * 100) / 100} Sec`
+                                        }
+                                    } else {
+                                        movieDuration = "Unknown";
+                                    }
                                     let movieCaption = ""
                                     if (this.type.toLowerCase() == 'movie') {
-                                        movieCaption += `${this.title} > ${this.quality}`;
-                                    } else if (this.type.toLowerCase()  == 'series') {
-                                        movieCaption += `${this.title} > Season: ${this.season} > Episode: ${this.episode} > ${this.quality}`;
+                                        movieCaption += `${this.title} > ${this.quality}\nDuration: ${movieDuration}\nSize: ${movieSize}`;
+                                    } else if (this.type.toLowerCase() == 'series') {
+                                        movieCaption += `${this.title} > Season: ${this.season} > Episode: ${this.episode} > ${this.quality}\nDuration: ${movieDuration}\nSize: ${movieSize}`;
                                     }
                                     if (description) {
                                         movieCaption += "\n" + separatingLine;
