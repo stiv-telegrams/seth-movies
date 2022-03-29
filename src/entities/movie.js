@@ -33,7 +33,7 @@ export default class Movie {
             year,
             duration,
             fileSize }) {
-        if (!type || !category || !title || !quality) {
+        if (!type || !title || !quality) {
             throw "SOME_REQUIRED_FIELDS_NOT_SET";
         } else {
             this.type = type;
@@ -140,12 +140,8 @@ export default class Movie {
                                     } else {
                                         movieDuration = "Unknown";
                                     }
-                                    let movieCaption = ""
-                                    if (this.type.toLowerCase() == 'movie') {
-                                        movieCaption += `${this.title} > ${this.quality}\nDuration: ${movieDuration}\nSize: ${movieSize}`;
-                                    } else if (this.type.toLowerCase() == 'series') {
-                                        movieCaption += `${this.title} > Season: ${this.season} > Episode: ${this.episode} > ${this.quality}\nDuration: ${movieDuration}\nSize: ${movieSize}`;
-                                    }
+                                    let movieCaption = `${this.title} ${this.season !== undefined ? "> " + this.season : ""} ${this.episode !== undefined ? "> " + this.episode : ""} > ${this.quality}\nDuration: ${movieDuration}\nSize: ${movieSize}`;
+
                                     if (description) {
                                         movieCaption += "\n" + separatingLine;
                                         movieCaption += "\n" + description;

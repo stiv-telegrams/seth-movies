@@ -1,5 +1,5 @@
 import color from "cli-color";
-import { separatingLine } from "../../config.js";
+import { separatingLine, types } from "../../config.js";
 import { getLogTime } from "../commons/functions.js";
 import Movie from "../entities/movie.js";
 
@@ -24,10 +24,36 @@ export default async function newMovieHandler(airgram, message, caption) {
         description,
         year } = movieInfo;
     let { id, chatId, content: { video: { video: { size: fileSize }, duration } } } = message;
-    if ((!type || !category || !title || !quality) || (type.toLowerCase() == "series" && (!season || !episode))) {
-        console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption]`);
-        editedCaption = caption + "\n" + separatingLine + "\n❌ - Invalid Caption";
+    type = types[type?.toLowerCase()];
+    if (!type) {
+        console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption (Unknown Type)]`);
+        editedCaption = caption + "\n" + separatingLine + `\n❌ - Invalid Caption (Unknown Type)`;
+    } else if (!title || !quality) {
+        let notFound = [];
+        if (!title) {
+            notFound.push("title")
+        }
+        if (!quality) {
+            notFound.push("quality")
+        }
+        // @ts-ignore
+        notFound = notFound.join(", ");
+        console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption (${notFound} Not Found)]`);
+        editedCaption = caption + "\n" + separatingLine + `\n❌ - Invalid Caption (${notFound} Not Found)`;
+    } else if ((type.type == "series") && (!season || !episode)) {
+        let notFound = [];
+        if (!season) {
+            notFound.push("season")
+        }
+        if (!episode) {
+            notFound.push("episode")
+        }
+        // @ts-ignore
+        notFound = notFound.join(", ");
+        console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption (${notFound} Not Found)]`);
+        editedCaption = caption + "\n" + separatingLine + `\n❌ - Invalid Caption (${notFound} Not Found)`;
     } else {
+        type = type.name;
         try {
             let movie = new Movie(
                 {
@@ -67,6 +93,6 @@ export default async function newMovieHandler(airgram, message, caption) {
             if (editMessageCaptionResult._ == "error" || editMessageCaptionResult.response._ == "error") {
                 console.error(getLogTime(), `[${chatId} | ${id}]`, color.red(`[Error while 'Editing Caption']`), "\n", editMessageCaptionResult);
             }
-        } catch (error) {}
+        } catch (error) { }
     } catch (error) { }
 }

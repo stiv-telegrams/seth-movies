@@ -1,32 +1,26 @@
-import { separatingLine } from "../../../config.js";
+import { types } from "../../../config.js";
 
 let userCommands = [
     "#report",
-    "#restart"
+    "#browse"
 ]
 
-let movieQuestionFields = {
-    "movie": [
+let typeContents = {
+    "single": [
         "type",
-        "category",
         "title",
         "quality"
     ],
     "series": [
         "type",
-        "category",
         "title",
         "season",
         "episode",
         "quality"
     ]
 }
-let movieSearchFirstMessageFirstLine = "Choose a type (reply this message with a number):"
-let movieSearchFirstMessage = `\
-${movieSearchFirstMessageFirstLine}\n\
-1 > Movie\n\
-2 > Series\n\
-\n\
-*NOTE: To search with title or a keyword, send the title or keyword with out reply.`;
-
-export { userCommands, movieSearchFirstMessage, movieQuestionFields, movieSearchFirstMessageFirstLine }
+let movieQuestionFields = {}
+for (let type of Object.values(types)) {
+    movieQuestionFields[type.name] = typeContents[type.type];
+}
+export { userCommands, movieQuestionFields }

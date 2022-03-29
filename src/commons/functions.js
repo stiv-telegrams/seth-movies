@@ -3,7 +3,9 @@ import { Airgram, Auth } from 'airgram';
 import prompt from "prompt-sync";
 import color from "cli-color";
 import dotenv from "dotenv";
-import { welcomeAtLoginText } from './variables.js';
+import { movieSearchFirstMessageFirstLine, welcomeAtLoginText } from './variables.js';
+import { dbInfo, notes } from '../../config.js';
+import { movieQuestionFields } from '../handlers/incoming-handlers/variables.js';
 
 const getLine = prompt();
 dotenv.config();
@@ -24,6 +26,7 @@ function getLogTime() {
  * @returns {string}
  */
 function capitalize(text) {
+    text = (text == undefined || text == null) ? "" : text;
     return `${text[0].toUpperCase() + text.substring(1).toLowerCase()}`;
 }
 
@@ -154,7 +157,44 @@ function removeAirgram(key, value) {
 function stringifyAirgramResponse(airgramResponse) {
     return JSON.stringify(airgramResponse, removeAirgram, 2);
 }
+async function makeMovieSearchFirstMessage() {
+    let con = mysql.createConnection({
+        host: dbInfo.host,
+        user: dbInfo.user,
+        password: dbInfo.password,
+        database: dbInfo.database
+    });
+    return new Promise((resolve, reject) => {
+        con.connect(async error => {
+            if (error) {
+                reject(error);
+            } else {
+                let query = `SELECT type FROM ${dbInfo.moviesTableName} GROUP BY type`;
+                con.query(query, (error, results) => {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        if (results.length == 0) {
+                            resolve("No Types Found!");
+                        } else {
+                            let orderedType = Object.keys(movieQuestionFields);
+                            let availableTypesList = results.map(result => result.type);
+                            let orderedAvailableTypesList = orderedType.filter(type => availableTypesList.includes(type));
+                            let question = `${movieSearchFirstMessageFirstLine}`
+                            let count = 1;
+                            for (let type of orderedAvailableTypesList) {
+                                question += `\n${count++} > ${type}`;
+                            }
+                            question += `\n\n*NOTE: ${notes.searchWithoutReply}`;
+                            resolve(question);
+                        }
+                    }
+                })
+            }
+        })
 
+    })
+}
 // mysql methods
 
 /**
@@ -289,6 +329,7 @@ export {
     sendMessage,
     deleteMessages,
     stringifyAirgramResponse,
+    makeMovieSearchFirstMessage,
     rowExists,
     addRow,
     getRows,

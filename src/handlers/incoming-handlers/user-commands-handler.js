@@ -2,12 +2,11 @@
 import color from "cli-color";
 import { serviceMessageTexts } from "../../../config.js";
 import { getLogTime, stringifyAirgramResponse } from "../../commons/functions.js";
-import User from "../../entities/user.js";
 import { sendFirstMovieQuestion } from "./functions.js";
 export default async function userCommandsHandler(airgram, user, message, command) {
     let { chatId: userId, id: messageId } = message;
     switch (command) {
-        case "#restart":
+        case "#browse":
             sendFirstMovieQuestion(airgram, user, messageId);
             break;
         default:

@@ -5,7 +5,8 @@ import { dbInfo, serviceMessageTexts, validationMessageTexts } from "../../../co
 import { getLogTime, getRows, stringifyAirgramResponse } from "../../commons/functions.js";
 import Movie from "../../entities/movie.js";
 import { makeMovieQuestion, sendFirstMovieQuestion } from "./functions.js";
-import { movieQuestionFields, movieSearchFirstMessage, movieSearchFirstMessageFirstLine } from "./variables.js";
+import { movieQuestionFields } from "./variables.js";
+import { movieSearchFirstMessageFirstLine } from "../../commons/variables.js";
 
 export default async function movieSearchHandler(airgram, message, user) {
     let { chatId: userId, id: messageId, replyToMessageId } = message;
@@ -78,9 +79,9 @@ export default async function movieSearchHandler(airgram, message, user) {
                         }
                         let searchResults = {};
                         for (let thisResult of result) {
-                            let knownFieldsString = `${thisResult["type"].toLowerCase()}>${thisResult["category"].toLowerCase()}`;
+                            let knownFieldsString = `${thisResult["type"].toLowerCase()}`;
                             if (!searchResults[knownFieldsString]) {
-                                searchResults[knownFieldsString] = [[thisResult["type"], thisResult["category"]]]
+                                searchResults[knownFieldsString] = [[thisResult["type"]]]
                             }
                             searchResults[knownFieldsString].push(thisResult["title"])
                         }
@@ -161,7 +162,7 @@ export default async function movieSearchHandler(airgram, message, user) {
                 invalidReply = true;
                 console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Replied For Invalid Message While Searching (replied to no-first line)]`);
             } else {
-                let validStart = firstLine.match(/^((series)|(movie))\s+\>/i);
+                let validStart = firstLine.match(/^\w+\s+\>/i);
                 let validFirstMessage = firstLine == movieSearchFirstMessageFirstLine;
                 if (!validFirstMessage && !validStart) {
                     invalidReply = true;
@@ -207,97 +208,67 @@ export default async function movieSearchHandler(airgram, message, user) {
                                 }
                             } else {
                                 knownFields.push(dataLinesObject[messageText]);
-                                let typedMovieQuestionFields = movieQuestionFields[knownFields[0].toLowerCase()];
-                                let knownFieldsObject = {}
-                                knownFields.forEach((element, index) => {
-                                    knownFieldsObject[typedMovieQuestionFields[index]] = element;
-                                })
-                                if (thisField == "quality") {
-                                    try {
-                                        // @ts-ignore
-                                        let movie = new Movie(knownFieldsObject);
-                                        let movieSendResult;
-                                        movieSendResult = await movie.send(airgram, user);
-                                        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Sent A Movie]`);
-                                        setTimeout(() => {
-                                            sendFirstMovieQuestion(airgram, user, messageId);
-                                        }, 3000);
-                                    } catch (error) {
-                                        // @ts-ignore
-                                        if (error === "MOVIE_NOT_FOUND") {
-                                            console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Content '${knownFields.join(" > ")}' Not Found]`);
-                                            let contentNotFoundMessageContent = {
-                                                type: "text",
-                                                text: serviceMessageTexts.contentNotFound
-                                            }
-                                            let contentNotFoundMessageResult = await user.sendMessage(airgram, contentNotFoundMessageContent);
-                                            if (!contentNotFoundMessageResult.success) {
-                                                console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling Content Not Found']`), "\n", stringifyAirgramResponse(contentNotFoundMessageResult.reason));
-                                            }
-                                        } else {
-                                            console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Sending A Movie']`), "\n", stringifyAirgramResponse(error));
-                                            let retryMessageContent = {
-                                                type: "text",
-                                                text: serviceMessageTexts.tryAgainDueToInternalError
-                                            }
-                                            let retryMessageResult = await user.sendMessage(airgram, retryMessageContent);
-                                            if (!retryMessageResult.success) {
-                                                console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [The Final Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
-                                            }
-                                        }
+                                let typedMovieQuestionFields = movieQuestionFields[knownFields[0]];
+                                if (!typedMovieQuestionFields) {
+                                    console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Titles Not Found for Type '${knownFields[0]}']`);
+                                    let contentNotFoundMessageContent = {
+                                        type: "text",
+                                        text: makeMovieQuestion(knownFields, "Title", null)
+                                    }
+                                    let contentNotFoundMessageResult = await user.sendMessage(airgram, contentNotFoundMessageContent);
+                                    if (!contentNotFoundMessageResult.success) {
+                                        console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling Titles Not Found']`), "\n", stringifyAirgramResponse(contentNotFoundMessageResult.reason));
                                     }
                                 } else {
-                                    let nextField = typedMovieQuestionFields[typedMovieQuestionFields.indexOf(thisField) + 1];
-                                    let con = mysql.createConnection({
-                                        host: dbInfo.host,
-                                        user: dbInfo.user,
-                                        password: dbInfo.password,
-                                        database: dbInfo.database
-                                    });
-                                    con.connect(async error => {
-                                        if (error) {
-                                            console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Connecting to Database']`), "\n", error);
-                                            let retryMessageContent = {
-                                                type: "text",
-                                                text: serviceMessageTexts.tryAgainDueToInternalError
-                                            }
-                                            let retryMessageResult = await user.sendMessage(airgram, retryMessageContent);
-                                            if (!retryMessageResult.success) {
-                                                console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
-                                            }
-                                        } else {
-                                            try {
-                                                let nextOptionsResult = await getRows(con, dbInfo.moviesTableName, [nextField], knownFieldsObject);
-                                                let nextOptions = [], uniqueMaker = [];
-                                                for (let option of nextOptionsResult) {
-                                                    if (!uniqueMaker.includes(option[nextField].toLowerCase())) {
-                                                        nextOptions.push(option[nextField]);
-                                                        uniqueMaker.push(option[nextField].toLowerCase());
-                                                    }
-                                                };
-                                                let nextQuestion = makeMovieQuestion(knownFields, nextField, nextOptions);
-
-                                                let movieQuestionMessageContent = {
+                                    let knownFieldsObject = {}
+                                    knownFields.forEach((element, index) => {
+                                        knownFieldsObject[typedMovieQuestionFields[index]] = element;
+                                    })
+                                    if (thisField == "quality") {
+                                        try {
+                                            // @ts-ignore
+                                            let movie = new Movie(knownFieldsObject);
+                                            let movieSendResult;
+                                            movieSendResult = await movie.send(airgram, user);
+                                            console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Sent A Movie]`);
+                                            setTimeout(() => {
+                                                sendFirstMovieQuestion(airgram, user, messageId);
+                                            }, 3000);
+                                        } catch (error) {
+                                            // @ts-ignore
+                                            if (error === "MOVIE_NOT_FOUND") {
+                                                console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Content '${knownFields.join(" > ")}' Not Found]`);
+                                                let contentNotFoundMessageContent = {
                                                     type: "text",
-                                                    text: nextQuestion
+                                                    text: serviceMessageTexts.contentNotFound
                                                 }
-                                                let movieQuestionMessageResult = await user.sendMessage(airgram, movieQuestionMessageContent);
-                                                if (!movieQuestionMessageResult.success) {
-                                                    console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Sending Movie Question Message']`), "\n", stringifyAirgramResponse(movieQuestionMessageResult.reason));
-                                                    let retryMessageContent = {
-                                                        type: "text",
-                                                        text: serviceMessageTexts.tryAgainDueToInternalError
-                                                    }
-                                                    let retryMessageResult = await user.sendMessage(airgram, retryMessageContent);
-                                                    if (!retryMessageResult.success) {
-                                                        console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
-                                                    }
-                                                } else {
-                                                    console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Sent Movie Question Message]`);
+                                                let contentNotFoundMessageResult = await user.sendMessage(airgram, contentNotFoundMessageContent);
+                                                if (!contentNotFoundMessageResult.success) {
+                                                    console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling Content Not Found']`), "\n", stringifyAirgramResponse(contentNotFoundMessageResult.reason));
                                                 }
-
-                                            } catch (error) {
-                                                console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Getting Next Options While Searching']`), "\n", error);
+                                            } else {
+                                                console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Sending A Movie']`), "\n", stringifyAirgramResponse(error));
+                                                let retryMessageContent = {
+                                                    type: "text",
+                                                    text: serviceMessageTexts.tryAgainDueToInternalError
+                                                }
+                                                let retryMessageResult = await user.sendMessage(airgram, retryMessageContent);
+                                                if (!retryMessageResult.success) {
+                                                    console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [The Final Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        let nextField = typedMovieQuestionFields[typedMovieQuestionFields.indexOf(thisField) + 1];
+                                        let con = mysql.createConnection({
+                                            host: dbInfo.host,
+                                            user: dbInfo.user,
+                                            password: dbInfo.password,
+                                            database: dbInfo.database
+                                        });
+                                        con.connect(async error => {
+                                            if (error) {
+                                                console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Connecting to Database']`), "\n", error);
                                                 let retryMessageContent = {
                                                     type: "text",
                                                     text: serviceMessageTexts.tryAgainDueToInternalError
@@ -306,10 +277,52 @@ export default async function movieSearchHandler(airgram, message, user) {
                                                 if (!retryMessageResult.success) {
                                                     console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
                                                 }
+                                            } else {
+                                                try {
+                                                    let nextOptionsResult = await getRows(con, dbInfo.moviesTableName, [nextField], knownFieldsObject);
+                                                    let nextOptions = [], uniqueMaker = [];
+                                                    for (let option of nextOptionsResult) {
+                                                        if (!uniqueMaker.includes(option[nextField].toLowerCase())) {
+                                                            nextOptions.push(option[nextField]);
+                                                            uniqueMaker.push(option[nextField].toLowerCase());
+                                                        }
+                                                    };
+                                                    let nextQuestion = makeMovieQuestion(knownFields, nextField, nextOptions);
+
+                                                    let movieQuestionMessageContent = {
+                                                        type: "text",
+                                                        text: nextQuestion
+                                                    }
+                                                    let movieQuestionMessageResult = await user.sendMessage(airgram, movieQuestionMessageContent);
+                                                    if (!movieQuestionMessageResult.success) {
+                                                        console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Sending Movie Question Message']`), "\n", stringifyAirgramResponse(movieQuestionMessageResult.reason));
+                                                        let retryMessageContent = {
+                                                            type: "text",
+                                                            text: serviceMessageTexts.tryAgainDueToInternalError
+                                                        }
+                                                        let retryMessageResult = await user.sendMessage(airgram, retryMessageContent);
+                                                        if (!retryMessageResult.success) {
+                                                            console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
+                                                        }
+                                                    } else {
+                                                        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Sent Movie Question Message]`);
+                                                    }
+
+                                                } catch (error) {
+                                                    console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Getting Next Options While Searching']`), "\n", error);
+                                                    let retryMessageContent = {
+                                                        type: "text",
+                                                        text: serviceMessageTexts.tryAgainDueToInternalError
+                                                    }
+                                                    let retryMessageResult = await user.sendMessage(airgram, retryMessageContent);
+                                                    if (!retryMessageResult.success) {
+                                                        console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [Movie Question]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
+                                                    }
+                                                }
                                             }
                                         }
+                                        );
                                     }
-                                    );
                                 }
                             }
                         }
