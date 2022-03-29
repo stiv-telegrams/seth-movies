@@ -1,7 +1,7 @@
 
 import mysql from 'mysql';
 import color from "cli-color";
-import { dbInfo, serviceMessageTexts, validationMessageTexts } from "../../../config.js";
+import { dbInfo, otherTexts, serviceMessageTexts, validationMessageTexts } from "../../../config.js";
 import { getLogTime, getRows, stringifyAirgramResponse } from "../../commons/functions.js";
 import Movie from "../../entities/movie.js";
 import { makeMovieQuestion, sendFirstMovieQuestion } from "./functions.js";
@@ -63,12 +63,6 @@ export default async function movieSearchHandler(airgram, message, user) {
                             console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while Telling 'No Result Found']`), "\n", stringifyAirgramResponse(noResultFoundMessageResult.reason));
                         }
                     } else {
-                        // let searchResults = [[[], []], [[], []], []];
-                        // let exampleSearchResults = {
-                        //     "movie>drama": [
-                        //         ["Movie", "Drama"], "Title-1", "Title-2"
-                        //     ]
-                        // };
                         let hereAreSearchResultsMessageContent = {
                             type: "text",
                             text: serviceMessageTexts.hereAreSearchResultsMessage
@@ -224,12 +218,60 @@ export default async function movieSearchHandler(airgram, message, user) {
                                     knownFields.forEach((element, index) => {
                                         knownFieldsObject[typedMovieQuestionFields[index]] = element;
                                     })
-                                    if (thisField == "quality") {
+                                    if (thisField == "episode" && knownFieldsObject["episode"] == otherTexts.allEpisodes) {
+                                        let allEpisodes = Object.values(dataLinesObject).slice(1);
+                                        if (allEpisodes.length == 0) {
+                                            console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Episodes for '${knownFields.join(" > ")}' Not Found]`);
+                                            let contentNotFoundMessageContent = {
+                                                type: "text",
+                                                text: serviceMessageTexts.episodesNot
+                                            }
+                                            let contentNotFoundMessageResult = await user.sendMessage(airgram, contentNotFoundMessageContent);
+                                            if (!contentNotFoundMessageResult.success) {
+                                                console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling Episodes Not Found' for '${knownFields.join(" > ")}']`), "\n", stringifyAirgramResponse(contentNotFoundMessageResult.reason));
+                                            }
+                                        } else {
+                                            for (let episode of allEpisodes) {
+                                                knownFieldsObject.episode = episode;
+                                                try {
+                                                    // @ts-ignore
+                                                    let movie = new Movie(knownFieldsObject);
+                                                    await movie.send(airgram, user);
+                                                    console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Sent An Episode]`);
+                                                } catch (error) {
+                                                    // @ts-ignore
+                                                    if (error === "MOVIE_NOT_FOUND") {
+                                                        console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Episode '${knownFields.join(" > ")}' Not Found]`);
+                                                        let contentNotFoundMessageContent = {
+                                                            type: "text",
+                                                            text: serviceMessageTexts.episodeNot
+                                                        }
+                                                        let contentNotFoundMessageResult = await user.sendMessage(airgram, contentNotFoundMessageContent);
+                                                        if (!contentNotFoundMessageResult.success) {
+                                                            console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while "Telling Episode '${knownFields.join(" > ")}' Not Found"]`), "\n", stringifyAirgramResponse(contentNotFoundMessageResult.reason));
+                                                        }
+                                                    } else {
+                                                        console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Sending An Episode']`), "\n", stringifyAirgramResponse(error));
+                                                        let retryMessageContent = {
+                                                            type: "text",
+                                                            text: serviceMessageTexts.tryAgainDueToInternalError
+                                                        }
+                                                        let retryMessageResult = await user.sendMessage(airgram, retryMessageContent);
+                                                        if (!retryMessageResult.success) {
+                                                            console.error(getLogTime(), `[${userId} | ${messageId}]`, color.red(`[Error while 'Telling To Retry [All Episodes]']`), "\n", stringifyAirgramResponse(retryMessageResult.reason));
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        setTimeout(() => {
+                                            sendFirstMovieQuestion(airgram, user, messageId);
+                                        }, 3000);
+                                    } else if (thisField == "quality") {
                                         try {
                                             // @ts-ignore
                                             let movie = new Movie(knownFieldsObject);
-                                            let movieSendResult;
-                                            movieSendResult = await movie.send(airgram, user);
+                                            await movie.send(airgram, user);
                                             console.log(getLogTime(), `[${userId} | ${messageId}]`, `[Sent A Movie]`);
                                             setTimeout(() => {
                                                 sendFirstMovieQuestion(airgram, user, messageId);
@@ -287,6 +329,9 @@ export default async function movieSearchHandler(airgram, message, user) {
                                                             uniqueMaker.push(option[nextField].toLowerCase());
                                                         }
                                                     };
+                                                    if (nextField.toLowerCase() == "episode") {
+                                                        nextOptions = [otherTexts.allEpisodes, ...nextOptions]
+                                                    }
                                                     let nextQuestion = makeMovieQuestion(knownFields, nextField, nextOptions);
 
                                                     let movieQuestionMessageContent = {

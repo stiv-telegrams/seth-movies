@@ -208,7 +208,7 @@ async function rowExists(con, table, conditionsObject) {
     let values = [];
     if (conditionsObject) {
         for (let [column, data] of Object.entries(conditionsObject)) {
-            conditionParams.push(`${column}=${data ? `?` : `NULL`}`);
+            conditionParams.push(`${column} ${data ? `= ?` : `IS NULL`}`);
         }
         // @ts-ignore
         conditionParams = conditionParams.join(" AND ");
@@ -265,7 +265,8 @@ async function getRows(con, table, columns, conditionsObject) {
     let values = [];
     if (conditionsObject) {
         for (let [column, data] of Object.entries(conditionsObject)) {
-            conditionParams.push(`${column}=${data ? `?` : `NULL`}`);
+
+            conditionParams.push(`${column} ${data ? `= ?` : `IS NULL`}`);
         }
         // @ts-ignore
         conditionParams = conditionParams.join(" AND ");
@@ -296,7 +297,7 @@ async function updateRows(con, table, newDataObject, conditionsObject) {
     let values = [];
     if (conditionsObject) {
         for (let [column, data] of Object.entries(conditionsObject)) {
-            conditionParams.push(`${column}=${data ? `?` : `NULL`}`);
+            conditionParams.push(`${column} ${data ? `= ?` : `IS NULL`}`);
         }
         // @ts-ignore
         conditionParams = conditionParams.join(" AND ");
@@ -305,7 +306,7 @@ async function updateRows(con, table, newDataObject, conditionsObject) {
 
     let newDataParams = [];
     for (let [column, data] of Object.entries(newDataObject)) {
-        newDataParams.push(`${column}=${data ? `?` : `NULL`}`);
+        newDataParams.push(`${column} ${data ? `= ?` : `IS NULL`}`);
     }
     values = [...Object.values(newDataParams).filter(data => data), ...values];
     let query = `UPDATE ${table} SET ${newDataParams} ${conditionsObject ? 'WHERE ' + conditionParams : ""}`;

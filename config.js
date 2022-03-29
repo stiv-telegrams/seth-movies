@@ -3,6 +3,10 @@ let allowedUserIdsRange = {
     max: 40000000000
 };
 
+let defaults = {
+    quality:"720p"
+}
+
 let dbInfo = {
     host: "localhost",
     user: "stiv",
@@ -35,6 +39,8 @@ let serviceMessageTexts = {
     userCommandUnderMaintenance: "Sorry, this command is not available yet.",
     tryAgainDueToInternalError: "Please try again [Internal Error]",
     contentNotFound: "Content Not Found!",
+    episodesNot: "Episodes Not Found!",
+    episodeNot: "Episode Not Found!",
     noResultFound: `No result found for your search!\n\n*NOTE ${notes.useBrowse}`,
     hereAreSearchResultsMessage: "The results for your search...",
     youJustGotUnapproved: "You just got unapproved! Wait until an admin approves you.",
@@ -49,6 +55,9 @@ let validationMessageTexts = {
     invalidConfirmation: "Confirmation must be yes or no.",
     invalidAnswerWhileSearching: "Invalid answer, please replay a valid number only.",
     invalidReplyWhileSearching: "You have replied to wrong message."
+}
+let otherTexts = {
+    allEpisodes: "All Episodes"
 }
 let types = {
     m: {
@@ -92,10 +101,12 @@ let separatingLine = "———";
 
 export {
     dbInfo,
+    defaults,
     allowedUserIdsRange,
+    notes,
     types,
     serviceMessageTexts,
-    notes,
+    otherTexts,
     registrationMessages,
     validationMessageTexts,
     validConfirmationAnswers,

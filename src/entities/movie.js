@@ -1,6 +1,6 @@
 
 import mysql from 'mysql';
-import { dbInfo, separatingLine } from "../../config.js";
+import { dbInfo, defaults, separatingLine } from "../../config.js";
 import { addRow, getRows, rowExists, updateRows } from '../commons/functions.js';
 
 export default class Movie {
@@ -23,9 +23,9 @@ export default class Movie {
         { type,
             category,
             title,
-            quality,
             season,
             episode,
+            quality,
             messageId,
             fromChatId,
             keywords,
@@ -33,6 +33,7 @@ export default class Movie {
             year,
             duration,
             fileSize }) {
+        quality = quality ?? defaults.quality;
         if (!type || !title || !quality) {
             throw "SOME_REQUIRED_FIELDS_NOT_SET";
         } else {
@@ -100,20 +101,32 @@ export default class Movie {
             password: dbInfo.password,
             database: dbInfo.database
         });
-        let uniqueId = this.uniqueId;
         return new Promise((resolve, reject) => {
             con.connect(async error => {
                 if (error) {
                     reject(error);
                 } else {
                     try {
-                        let getMovieResult = await getRows(con, dbInfo.moviesTableName, ["messageId", "fromChatId", "description", "duration", "fileSize"], { uniqueId });
+                        let getMovieResult = await getRows(con, dbInfo.moviesTableName, ["messageId", "fromChatId", "description", "duration", "fileSize"], { uniqueId: this.uniqueId });
                         let movieToBeSent = getMovieResult[0];
+                        if (!movieToBeSent) {
+                            let paramsWithoutQuality = {
+                                type: this.type,
+                                category: this.category,
+                                title: this.title,
+                                season: this.season,
+                                episode: this.episode,
+
+                            };
+                            getMovieResult = await getRows(con, dbInfo.moviesTableName, ["messageId", "fromChatId", "description", "duration", "fileSize", "quality"], paramsWithoutQuality);
+                            movieToBeSent = getMovieResult[0];
+                        }
                         if (!movieToBeSent) {
                             reject("MOVIE_NOT_FOUND");
                         } else {
                             // @ts-ignore
-                            let { messageId, fromChatId: chatId, description, duration: videoDuration, fileSize } = movieToBeSent;
+                            let { messageId, fromChatId: chatId, description, duration: videoDuration, fileSize, quality } = movieToBeSent;
+                            if(quality) this.quality = quality;
                             let getMessageParams = {
                                 chatId,
                                 messageId

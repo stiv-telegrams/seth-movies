@@ -17,10 +17,10 @@ export default function outgoingHandler(airgram, message) {
             let command = commandMatch[0].trim().toLowerCase();
             switch (command) {
                 case "#block":
-                case "#un-block":
+                case "#unblock":
                 case "#approve":
-                case "#un-approve":
-                case "#re-register":
+                case "#unapprove":
+                case "#reregister":
                     adminCommandsHandler(airgram, message, command)
             }
         }

@@ -5,9 +5,10 @@ import { getLogTime, stringifyAirgramResponse } from "../../commons/functions.js
 import User from "../../entities/user.js";
 export default async function adminCommandsHandler(airgram, message, command) {
     let chatId = message.chatId;
+    let user;
     switch (command) {
         case "#approve":
-            let user = new User(chatId);
+            user = new User(chatId);
             if (!user.approved) {
                 user.approved = true;
                 try {
@@ -18,7 +19,7 @@ export default async function adminCommandsHandler(airgram, message, command) {
                 }
             }
             break;
-        case "#un-approve":
+        case "#unapprove":
             user = new User(chatId);
             if (user.approved) {
                 user.approved = false;
@@ -42,7 +43,7 @@ export default async function adminCommandsHandler(airgram, message, command) {
                 }
             }
             break;
-        case "#un-block":
+        case "#unblock":
             user = new User(chatId);
             if (user.blocked) {
                 user.blocked = false;
@@ -54,6 +55,6 @@ export default async function adminCommandsHandler(airgram, message, command) {
                 }
             }
             break;
-        case "#re-register":
+        case "#reregister":
     }
 }

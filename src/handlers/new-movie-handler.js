@@ -28,13 +28,10 @@ export default async function newMovieHandler(airgram, message, caption) {
     if (!type) {
         console.log(getLogTime(), `[${chatId} | ${id}]`, `[Invalid Caption (Unknown Type)]`);
         editedCaption = caption + "\n" + separatingLine + `\n❌ - Invalid Caption (Unknown Type)`;
-    } else if (!title || !quality) {
+    } else if (!title) {
         let notFound = [];
         if (!title) {
             notFound.push("title")
-        }
-        if (!quality) {
-            notFound.push("quality")
         }
         // @ts-ignore
         notFound = notFound.join(", ");
